@@ -720,7 +720,7 @@
         function formatNum(num) { return new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(num); }
         function formatDateStr(dateVal) { return (dateVal && dateVal.includes('T')) ? dateVal.split('T')[0] : (dateVal || "-"); }
         function formatMillion(num) { return (num >= 1000000) ? (num / 1000000).toFixed(2) : formatNum(num); }
-
+        /*
         // History Back handling
         document.addEventListener('DOMContentLoaded', () => history.pushState(null, null, location.href));
         window.onpopstate = function () {
@@ -728,6 +728,46 @@
             else if (document.getElementById('categoryModal').style.display === 'flex') { closeCategoryModal(); history.pushState(null, null, location.href); }
             else if (document.getElementById('view-app-sale').classList.contains('active-view')) { switchView('view-portal'); history.pushState(null, null, location.href); }
             else { history.back(); }
+        };
+        */
+        // ==============================================
+        // ระบบจัดการปุ่ม Back (สำหรับ Portal System)
+        // ==============================================
+        
+        // สร้าง History หลอกๆ ไว้ 1 ชั้น เมื่อโหลดหน้าเว็บ
+        document.addEventListener('DOMContentLoaded', () => {
+            history.pushState(null, null, location.href);
+        });
+
+        window.onpopstate = function () {
+            // เช็คว่ามี Modal ไหนเปิดอยู่ไหม?
+            var detailModal = document.getElementById('detailModal');
+            var categoryModal = document.getElementById('categoryModal');
+            
+            // 1. ถ้ากราฟแนวตั้ง (รายคน) เปิดอยู่ -> ปิดมัน
+            if (detailModal && detailModal.style.display === 'flex') {
+                closeModal(); 
+                history.pushState(null, null, location.href); // ดัน History กลับเข้าไป เพื่อให้กด Back ได้อีก
+            } 
+            // 2. ถ้ากราฟแนวนอน (รายกลุ่ม) เปิดอยู่ -> ปิดมัน
+            else if (categoryModal && categoryModal.style.display === 'flex') {
+                closeCategoryModal(); 
+                history.pushState(null, null, location.href);
+            } 
+            // 3. ถ้าอยู่ในหน้าระบบ Sale (view-app-sale) -> ให้กลับไปหน้า Portal
+            else if (document.getElementById('view-app-sale').classList.contains('active-view')) {
+                switchView('view-portal'); 
+                history.pushState(null, null, location.href);
+            }
+            // 4. ถ้าอยู่ในหน้าตั้งรหัสผ่าน -> กลับไปหน้า Login
+            else if (document.getElementById('view-set-password') && document.getElementById('view-set-password').classList.contains('active-view')) {
+                switchView('view-login');
+                history.pushState(null, null, location.href);
+            }
+            // 5. อื่นๆ (เช่นอยู่หน้า Portal แล้วกด Back) -> ให้ออกตามปกติ
+            else {
+                history.back(); 
+            }
         };
     </script>
 </body>
