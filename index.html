@@ -289,8 +289,11 @@
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
             
-            // อนุญาตให้ Password ว่างได้ (กรณีเข้าครั้งแรก)
-            if(!u) { Swal.fire('แจ้งเตือน', 'กรุณากรอก Username', 'warning'); return; }
+            // *** แก้ไขตรงนี้ครับ: เช็คแค่ Username (Password ปล่อยให้ว่างได้) ***
+            if(!u) { 
+                Swal.fire('แจ้งเตือน', 'กรุณากรอก Username', 'warning'); 
+                return; 
+            }
 
             Swal.fire({title: 'กำลังตรวจสอบ...', didOpen: ()=>Swal.showLoading()});
             
@@ -305,14 +308,13 @@
                 switchView('view-portal');
             } 
             else if (res && res.status === 'SET_PASSWORD') {
-                // *** กรณีต้องตั้งรหัสผ่านใหม่ ***
-                tempUserForSetup = res.user; // จำ User ไว้
+                // กรณีต้องตั้งรหัสผ่านใหม่ (Password เดิมเป็นค่าว่าง)
+                tempUserForSetup = res.user; 
                 
-                // เคลียร์ค่าเก่า
                 document.getElementById('newPass').value = '';
                 document.getElementById('confirmPass').value = '';
                 
-                switchView('view-set-password'); // ไปหน้าตั้งรหัส
+                switchView('view-set-password'); 
             } 
             else {
                 Swal.fire('เข้าสู่ระบบไม่สำเร็จ', res ? res.message : 'Error', 'error');
