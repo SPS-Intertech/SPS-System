@@ -750,8 +750,8 @@
                   responsive: true,
                   maintainAspectRatio: false,
                   
-                  // *** จุดแก้ที่ 1: เพิ่ม Padding ขวาเป็น 70 เพื่อกันตัวเลขตกขอบ ***
-                  layout: { padding: { right: 70, left: 0 } },
+                  // *** แก้ไขตรงนี้: ลดจาก 70 เหลือ 25 เพื่อให้กราฟยาวขึ้นครับ ***
+                  layout: { padding: { right: 25, left: 0 } },
                   
                   events: ['click', 'touchstart'], 
                   interaction: {
@@ -782,8 +782,6 @@
                           align: 'end', 
                           color: '#555',
                           font: { weight: 'bold', size: 11 },
-                          
-                          // *** จุดแก้ที่ 2: ใช้ formatMillion เพื่อแสดงหน่วยล้าน ***
                           formatter: function(value) { 
                               return formatMillion(value); 
                           }
