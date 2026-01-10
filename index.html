@@ -126,7 +126,7 @@
             border: 2px solid #eee; background-color: #ddd;
         }
         .portal-content { padding-bottom: 80px; /* เว้นที่ให้ Footer */ }
-        
+        /*
         .portal-footer {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: white; padding: 15px; text-align: center;
@@ -135,7 +135,33 @@
             z-index: 100;
         }
         .footer-logo { height: 30px; width: auto; opacity: 0.8; }
-        .footer-text { font-size: 10px; color: #999; font-weight: 300; }
+        .footer-text { font-size: 10px; color: #999; font-weight: 300; } */
+        /* --- แก้ไขส่วน Footer --- */
+        .portal-footer {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: white; padding: 15px; text-align: center;
+            border-top: 1px solid #f0f0f0; box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
+            
+            /* ใช้ Flexbox แนวนอน (Row) เพื่อให้อยู่บรรทัดเดียวกัน */
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px; /* ระยะห่างระหว่าง Logo กับชื่อ */
+            z-index: 100;
+        }
+        
+        .footer-logo { 
+            height: 35px; /* ปรับ Logo ให้ใหญ่ขึ้นนิดหน่อย (เดิม 30) */
+            width: auto; 
+            opacity: 1.0; /* ปรับให้ชัดขึ้น (เดิม 0.8) */
+        }
+        
+        .footer-text { 
+            font-size: 16px; /* ขยายตัวหนังสือ (เดิม 10px) */
+            color: #2c3e50; /* ปรับสีให้เข้มขึ้นให้อ่านง่าย */
+            font-weight: 600; /* ตัวหนาขึ้น */
+        }
     </style>
 </head>
 <body>
