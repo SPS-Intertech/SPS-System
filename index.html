@@ -659,55 +659,140 @@
         }
 
         function openCategoryModal(typeIndex) {
-            // Logic เดียวกับอันล่าสุดที่คุณใช้งาน
-            typeIndex = Number(typeIndex);
-            if (!globalAggregatedData || globalAggregatedData.length === 0) return;
+          // 1. แปลงเป็นตัวเลขให้ชัวร์
+          typeIndex = Number(typeIndex); 
+          
+          if (!globalAggregatedData || globalAggregatedData.length === 0) {
+              Swal.fire('ข้อผิดพลาด', 'ไม่พบข้อมูลตั้งต้น', 'error');
+              return;
+          }
+          let title = '';
+          let color = '';
+          
+          // 2. เตรียมข้อมูล (Calculate Data)
+          let processedData = globalAggregatedData.map(d => {
+              let val = 0;
+              if (typeIndex === 0) {
+                  val = d.totalSent;
+                  title = 'รายการส่งแล้ว (Sent)'; color = '#66bb6a';
+              } else if (typeIndex === 1) {
+                  val = Math.max(0, d.totalBacklog - d.totalPastDue);
+                  title = 'รายการรอส่ง (ไม่รวม Past Due)'; color = '#ffa726';
+              } else if (typeIndex === 2) {
+                  val = d.totalPastDue;
+                  title = 'รายการเกินกำหนด (Past Due)'; color = '#ef5350';
+              } else if (typeIndex === 3) {
+                  val = d.totalSales;
+                  title = 'ยอดขายรวมทั้งหมด'; color = '#42a5f5';
+              } else if (typeIndex === 4) {
+                  val = d.totalBacklog; 
+                  title = 'รายการรอส่งทั้งหมด (รวม Past Due)'; color = '#8d6e63';
+              }
+              return { ...d, value: val };
+          });
 
-            let keyProp = '', title = '', color = '';
-            // คำนวณ processedData ... (ลดรูปเพื่อความกระชับ แต่ Logic ครบ)
-            let processedData = globalAggregatedData.map(d => {
-                let val = 0;
-                if (typeIndex === 0) { val = d.totalSent; title = 'รายการส่งแล้ว'; color = '#66bb6a'; }
-                else if (typeIndex === 1) { val = Math.max(0, d.totalBacklog - d.totalPastDue); title = 'รายการรอส่ง (ไม่รวม Past Due)'; color = '#ffa726'; }
-                else if (typeIndex === 2) { val = d.totalPastDue; title = 'รายการเกินกำหนด (Past Due)'; color = '#ef5350'; }
-                else if (typeIndex === 3) { val = d.totalSales; title = 'ยอดขายรวมทั้งหมด'; color = '#42a5f5'; }
-                else if (typeIndex === 4) { val = d.totalBacklog; title = 'รายการรอส่งทั้งหมด'; color = '#8d6e63'; }
-                return { ...d, value: val };
-            });
+          // 3. กรองเฉพาะยอด > 0 และเรียงลำดับ
+          let filteredData = processedData.filter(d => d.value > 0);
+          filteredData.sort((a, b) => b.value - a.value);
 
-            let filteredData = processedData.filter(d => d.value > 0).sort((a,b)=>b.value-a.value).slice(0, 15);
-            if (filteredData.length === 0) { Swal.fire('ไม่มีข้อมูล', 'ไม่มีรายการในหมวดหมู่นี้', 'info'); return; }
+          // ตัดเหลือ 15 รายการ
+          if (filteredData.length > 15) {
+              filteredData = filteredData.slice(0, 15);
+          }
 
-            let totalValue = filteredData.reduce((sum, item) => sum + item.value, 0);
-            document.getElementById('catModalSubtitle').innerText = `รวมมูลค่า ${formatMillion(totalValue)} ล้านบาท`;
-            document.getElementById('catModalTitle').innerText = title;
-            document.getElementById('categoryModal').style.display = 'flex';
-            document.getElementById('categoryChartContainer').style.height = ((filteredData.length * 35) + 50) + 'px';
+          if (filteredData.length === 0) {
+              Swal.fire('ไม่มีข้อมูล', 'ไม่มีรายการในหมวดหมู่นี้', 'info');
+              return;
+          }
 
-            const ctx = document.getElementById('categoryChart').getContext('2d');
-            if (categoryChart) categoryChart.destroy();
+          // แสดงยอดรวมที่หัวข้อ
+          let totalValue = filteredData.reduce((sum, item) => sum + item.value, 0);
+          document.getElementById('catModalSubtitle').innerText = `รวมมูลค่า ${formatMillion(totalValue)} ล้านบาท`;
 
-            categoryChart = new Chart(ctx, {
-                type: 'bar',
-                plugins: [ChartDataLabels],
-                data: {
-                    labels: filteredData.map(d => d.name.length > 15 ? d.name.substring(0,15)+'..' : d.name),
-                    datasets: [{ data: filteredData.map(d=>d.value), backgroundColor: color, barPercentage: 0.6 }]
-                },
-                options: {
-                    indexAxis: 'y', animation: false, maintainAspectRatio: false,
-                    events: ['click', 'touchstart'], interaction: { mode: 'nearest', axis: 'y', intersect: false },
-                    onClick: (e) => {
-                        const chart = e.chart;
-                        const pointsY = chart.scales.y.getValueForPixel(Chart.helpers.getRelativePosition(e, chart).y);
-                        const index = Math.round(pointsY);
-                        if (index >= 0 && index < filteredData.length) setTimeout(()=>openModal(filteredData[index]), 50);
-                    },
-                    scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#333', autoSkip: false } } },
-                    plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#555', font: { weight: 'bold', size: 11 }, formatter: formatNum }, tooltip: { enabled: false } }
-                }
-            });
-        }
+          // คำนวณความสูง
+          let dynamicHeight = (filteredData.length * 35) + 50; 
+          document.getElementById('categoryChartContainer').style.height = dynamicHeight + 'px';
+
+          // Labels (ตัดคำ)
+          let labels = filteredData.map(d => {
+              let n = d.name;
+              n = n.replace(/บริษัท|ห\.?จ\.?ก\.?|ห้างหุ้นส่วนจำกัด|จำกัด|[(]?มหาชน[)]?|company|ltd\.?|co\.?|inc\.?/gi, '');
+              n = n.replace(/[(].*?[)]/g, '');
+              n = n.split('สาขา')[0];
+              n = n.trim();
+              return n.length > 15 ? n.substring(0, 15) + '..' : n;
+          });
+          
+          let values = filteredData.map(d => d.value);
+
+          // เปิด Modal
+          document.getElementById('categoryModal').style.display = 'flex';
+          document.getElementById('catModalTitle').innerText = title;
+
+          const ctx = document.getElementById('categoryChart').getContext('2d');
+          if (categoryChart) categoryChart.destroy();
+
+          categoryChart = new Chart(ctx, {
+              type: 'bar',
+              plugins: [ChartDataLabels],
+              data: {
+                  labels: labels,
+                  datasets: [{
+                      data: values,
+                      backgroundColor: color,
+                      barPercentage: 0.6,
+                      categoryPercentage: 0.9 
+                  }]
+              },
+              options: {
+                  indexAxis: 'y',
+                  animation: false, 
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  
+                  // *** จุดแก้ที่ 1: เพิ่ม Padding ขวาเป็น 70 เพื่อกันตัวเลขตกขอบ ***
+                  layout: { padding: { right: 70, left: 0 } },
+                  
+                  events: ['click', 'touchstart'], 
+                  interaction: {
+                      mode: 'nearest', axis: 'y', intersect: false 
+                  },
+                  onClick: (e) => {
+                      const chart = e.chart;
+                      const canvasPosition = Chart.helpers.getRelativePosition(e, chart);
+                      const dataY = chart.scales.y.getValueForPixel(canvasPosition.y);
+                      const index = Math.round(dataY);
+
+                      if (index >= 0 && index < filteredData.length) {
+                          let selectedCustomer = filteredData[index];
+                          setTimeout(() => { openModal(selectedCustomer); }, 50);
+                      }
+                  },
+                  scales: {
+                      x: { display: false },
+                      y: { 
+                          grid: { display: false },
+                          ticks: { font: { size: 11 }, color: '#333', autoSkip: false } 
+                      }
+                  },
+                  plugins: {
+                      legend: { display: false },
+                      datalabels: {
+                          anchor: 'end', 
+                          align: 'end', 
+                          color: '#555',
+                          font: { weight: 'bold', size: 11 },
+                          
+                          // *** จุดแก้ที่ 2: ใช้ formatMillion เพื่อแสดงหน่วยล้าน ***
+                          formatter: function(value) { 
+                              return formatMillion(value); 
+                          }
+                      },
+                      tooltip: { enabled: false } 
+                  }
+              }
+          });
+      }
 
         function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
         function closeCategoryModal() { document.getElementById('categoryModal').style.display = 'none'; }
