@@ -119,6 +119,23 @@
         #categoryModal { z-index: 9000 !important; }
         #detailModal { z-index: 9500 !important; }
         .swal2-container { z-index: 200000 !important; }
+        /* --- เพิ่ม CSS สำหรับ Profile และ Footer --- */
+        .profile-section { display: flex; align-items: center; gap: 15px; }
+        .profile-img { 
+            width: 50px; height: 50px; border-radius: 50%; object-fit: cover; 
+            border: 2px solid #eee; background-color: #ddd;
+        }
+        .portal-content { padding-bottom: 80px; /* เว้นที่ให้ Footer */ }
+        
+        .portal-footer {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: white; padding: 15px; text-align: center;
+            border-top: 1px solid #f0f0f0; box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+            z-index: 100;
+        }
+        .footer-logo { height: 30px; width: auto; opacity: 0.8; }
+        .footer-text { font-size: 10px; color: #999; font-weight: 300; }
     </style>
 </head>
 <body>
@@ -153,16 +170,27 @@
 
     <div id="view-portal" class="view-section">
         <div class="portal-header">
-            <div>
-                <div style="font-size:12px; color:#888;">ยินดีต้อนรับ</div>
-                <div style="font-weight:bold; font-size:16px;" id="dispName">-</div>
+            <div class="profile-section">
+                <img id="userImg" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-img">
+                <div>
+                    <div style="font-size:12px; color:#888;">ยินดีต้อนรับ</div>
+                    <div style="font-weight:bold; font-size:16px;" id="dispName">-</div>
+                </div>
             </div>
-            <button onclick="doLogout()" style="background:none; border:none; color:#ef5350; cursor:pointer;">
-                <i class="fa-solid fa-power-off"></i> ออกจากระบบ
+            <button onclick="doLogout()" style="background:none; border:none; color:#ef5350; cursor:pointer; font-size:12px;">
+                <i class="fa-solid fa-power-off"></i><br>ออกระบบ
             </button>
         </div>
-        <div class="portal-grid" id="appGrid">
-            <div style="text-align:center; grid-column:1/-1; color:#999;">กำลังโหลดรายการระบบ...</div>
+
+        <div class="portal-content">
+            <div class="portal-grid" id="appGrid">
+                <div style="text-align:center; grid-column:1/-1; color:#999;">กำลังโหลดรายการระบบ...</div>
+            </div>
+        </div>
+
+        <div class="portal-footer">
+            <img src="https://drive.google.com/thumbnail?id=1gyn_N2ZR52d17UgWmta4Q3JjegLlbcaO&sz=w1000" class="footer-logo">
+            <div class="footer-text">S.P.S Intertech Public Co.,Ltd.</div>
         </div>
     </div>
 
@@ -289,11 +317,7 @@
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
             
-            // *** แก้ไขตรงนี้ครับ: เช็คแค่ Username (Password ปล่อยให้ว่างได้) ***
-            if(!u) { 
-                Swal.fire('แจ้งเตือน', 'กรุณากรอก Username', 'warning'); 
-                return; 
-            }
+            if(!u) { Swal.fire('แจ้งเตือน', 'กรุณากรอก Username', 'warning'); return; }
 
             Swal.fire({title: 'กำลังตรวจสอบ...', didOpen: ()=>Swal.showLoading()});
             
@@ -301,19 +325,24 @@
             Swal.close();
 
             if (res && res.status === true) {
-                // Login สำเร็จปกติ
                 currentUser = res;
                 document.getElementById('dispName').innerText = res.name;
+                
+                // *** เพิ่ม: จัดการรูปโปรไฟล์ ***
+                let imgUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; // รูป Default
+                if (res.photo) {
+                    // แปลง ID เป็น URL
+                    imgUrl = `https://drive.google.com/thumbnail?id=${res.photo}&sz=w100`;
+                }
+                document.getElementById('userImg').src = imgUrl;
+
                 loadPortalApps(res.roles);
                 switchView('view-portal');
             } 
             else if (res && res.status === 'SET_PASSWORD') {
-                // กรณีต้องตั้งรหัสผ่านใหม่ (Password เดิมเป็นค่าว่าง)
                 tempUserForSetup = res.user; 
-                
                 document.getElementById('newPass').value = '';
                 document.getElementById('confirmPass').value = '';
-                
                 switchView('view-set-password'); 
             } 
             else {
