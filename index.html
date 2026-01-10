@@ -134,6 +134,22 @@
             </div>
         </div>
     </div>
+    <div id="view-set-password" class="view-section">
+        <div class="login-container">
+            <div class="login-box">
+                <h3 style="margin:0 0 10px 0;">ตั้งรหัสผ่านใหม่</h3>
+                <p style="font-size:12px; color:#666; margin-bottom:20px;">
+                    บัญชีของคุณยังไม่มีรหัสผ่าน<br>กรุณาตั้งรหัสผ่านเพื่อเข้าใช้งาน
+                </p>
+                
+                <input type="password" id="newPass" class="login-input" placeholder="รหัสผ่านใหม่ (ขั้นต่ำ 6 ตัว)">
+                <input type="password" id="confirmPass" class="login-input" placeholder="ยืนยันรหัสผ่านอีกครั้ง">
+                
+                <button onclick="doSetNewPassword()" class="login-btn" style="background-color: var(--bg-green);">บันทึกรหัสผ่าน</button>
+                <button onclick="switchView('view-login')" class="login-btn" style="background-color: #999; margin-top:5px;">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
 
     <div id="view-portal" class="view-section">
         <div class="portal-header">
@@ -266,24 +282,76 @@
         }
 
         // --- LOGIN FUNCTION ---
+        // ตัวแปรเก็บ Username ชั่วคราว ระหว่างรอตั้งรหัส
+        let tempUserForSetup = '';
+
         async function doLogin() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
             
-            if(!u || !p) { Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลให้ครบ', 'warning'); return; }
+            // อนุญาตให้ Password ว่างได้ (กรณีเข้าครั้งแรก)
+            if(!u) { Swal.fire('แจ้งเตือน', 'กรุณากรอก Username', 'warning'); return; }
 
             Swal.fire({title: 'กำลังตรวจสอบ...', didOpen: ()=>Swal.showLoading()});
             
             const res = await fetchAPI({ action: 'login', u: u, p: p });
             Swal.close();
 
-            if (res && res.status) {
+            if (res && res.status === true) {
+                // Login สำเร็จปกติ
                 currentUser = res;
                 document.getElementById('dispName').innerText = res.name;
                 loadPortalApps(res.roles);
                 switchView('view-portal');
-            } else {
+            } 
+            else if (res && res.status === 'SET_PASSWORD') {
+                // *** กรณีต้องตั้งรหัสผ่านใหม่ ***
+                tempUserForSetup = res.user; // จำ User ไว้
+                
+                // เคลียร์ค่าเก่า
+                document.getElementById('newPass').value = '';
+                document.getElementById('confirmPass').value = '';
+                
+                switchView('view-set-password'); // ไปหน้าตั้งรหัส
+            } 
+            else {
                 Swal.fire('เข้าสู่ระบบไม่สำเร็จ', res ? res.message : 'Error', 'error');
+            }
+        }
+
+        async function doSetNewPassword() {
+            const p1 = document.getElementById('newPass').value;
+            const p2 = document.getElementById('confirmPass').value;
+
+            // 1. ตรวจสอบความยาว
+            if (p1.length < 6) {
+                Swal.fire('รหัสผ่านสั้นเกินไป', 'ต้องมีความยาวอย่างน้อย 6 ตัวอักษร', 'warning');
+                return;
+            }
+
+            // 2. ตรวจสอบการยืนยัน
+            if (p1 !== p2) {
+                Swal.fire('รหัสผ่านไม่ตรงกัน', 'กรุณากรอกช่องยืนยันให้ตรงกับรหัสผ่าน', 'warning');
+                return;
+            }
+
+            Swal.fire({title: 'กำลังบันทึก...', didOpen: ()=>Swal.showLoading()});
+
+            // ส่งไปบันทึก
+            const res = await fetchAPI({ 
+                action: 'setPassword', 
+                u: tempUserForSetup, 
+                newPass: p1 
+            });
+            
+            Swal.close();
+
+            if (res && res.status) {
+                await Swal.fire('สำเร็จ', 'บันทึกรหัสผ่านเรียบร้อย กรุณาเข้าสู่ระบบใหม่', 'success');
+                switchView('view-login');
+                document.getElementById('password').value = ''; // เคลียร์ช่องให้กรอกใหม่
+            } else {
+                Swal.fire('Error', 'บันทึกไม่สำเร็จ: ' + (res ? res.message : ''), 'error');
             }
         }
 
