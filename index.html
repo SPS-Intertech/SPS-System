@@ -720,7 +720,7 @@
                 },
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
-                    plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
                     onClick: (e, activeEls) => { if (activeEls.length > 0) openCategoryModal(activeEls[0].index); }
                 }
             });
@@ -1029,7 +1029,7 @@
                           }
                       },
                       tooltip: { 
-                          enabled: true,
+                          enabled: false,
                           callbacks: {
                               label: function(context) {
                                   let label = context.dataset.label || '';
