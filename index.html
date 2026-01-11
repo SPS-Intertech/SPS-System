@@ -174,14 +174,15 @@
         /* --- JOB COST: TABLE LAYOUT --- */
         
         /* กำหนดโครงสร้างคอลัมน์ (PN, ชื่อ, Qty, ขาย, ต้นทุน, กำไร) */
+        /* แก้ไขส่วนนี้ */
         .job-table-template {
             display: grid;
-            /* ปรับสัดส่วนคอลัมน์ให้พอดีกับมือถือ (ชื่อสินค้าให้ยืดหดได้) */
-            grid-template-columns: 18% 27% 10% 15% 15% 15%; 
+            /* PN | Qty | ขาย | ต้นทุน | กำไร | % */
+            grid-template-columns: 22% 12% 17% 17% 17% 15%; 
             gap: 4px;
             padding: 10px 5px;
             align-items: center;
-            font-size: 11px; /* ลดขนาดตัวหนังสือลงนิดหน่อยให้พอดีบรรทัด */
+            font-size: 11px;
             border-bottom: 1px solid #eee;
         }
 
@@ -354,12 +355,11 @@
                         <div style="margin-top:10px;">
                             <div class="job-table-template job-table-header-row">
                                 <div>PN</div>
-                               
                                 <div class="text-right">Qty</div>
                                 <div class="text-right">ยอดขาย</div>
                                 <div class="text-right">ต้นทุน</div>
                                 <div class="text-right">กำไร</div>
-                            </div>
+                                <div class="text-right">%</div> </div>
                         </div>
                     </div>
 
@@ -684,17 +684,26 @@
             let html = '';
             
             data.forEach((item, index) => {
-                let profitColor = item.profit >= 0 ? '#2e7d32' : '#c62828'; // เขียว/แดง
+                // คำนวณ %
+                let pct = (item.revenue > 0) ? (item.profit / item.revenue * 100) : 0;
                 
-                // ใช้ Grid Template เดียวกับ Header
+                // กำหนดสี
+                let profitColor = item.profit >= 0 ? '#2e7d32' : '#c62828'; // เขียว/แดง
+                let pctColor = pct >= 0 ? '#2e7d32' : '#c62828';
+
                 html += `
                 <div class="job-table-template job-data-row" onclick="openJobDetail(${index})">
-                    <div style="font-weight:bold; color:var(--primary-color); word-break:break-word;">${item.pn}</div>
-                   
+                    <div style="font-weight:bold; color:var(--primary-color); word-break:break-all;">${item.pn}</div>
+                    
                     <div class="text-right" style="font-weight:600;">${formatNum(item.qty)}</div>
+                    
                     <div class="text-right text-gray">${formatNum(item.revenue)}</div>
+                    
                     <div class="text-right text-gray">${formatNum(item.totalCost)}</div>
+                    
                     <div class="text-right" style="font-weight:bold; color:${profitColor};">${formatNum(item.profit)}</div>
+                    
+                    <div class="text-right" style="font-size:10px; color:${pctColor};">${pct.toFixed(1)}%</div>
                 </div>`;
             });
             
