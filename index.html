@@ -171,64 +171,50 @@
         .swal2-container { z-index: 200000 !important; }
         #categoryModal { z-index: 9000 !important; }
         #detailModal { z-index: 9500 !important; }
-        /* --- JOB COST: GRID & SCROLL SYSTEM --- */
+        /* --- JOB COST: TABLE LAYOUT --- */
         
-        /* 1. ส่วนคอนเทนเนอร์หลักของ Job Cost */
-        .job-content-wrapper {
-            display: flex;
-            flex-direction: column;
-            height: calc(100vh - 70px); /* ความสูงเต็มจอ ลบ Header บนสุดออก */
-            overflow: hidden; /* ห้าม Scroll ที่ตัวแม่ */
-        }
-
-        /* 2. ส่วน Header (Summary) ให้ Fix อยู่กับที่ */
-        .job-fixed-header {
-            flex: 0 0 auto; /* ห้ามยืดหด */
-            background: #f4f6f8; /* สีพื้นหลังเดียวกับ Body */
-            z-index: 10;
-            padding-bottom: 10px;
-        }
-
-        /* 3. ส่วนเนื้อหา (Grid) ให้ Scroll ได้ */
-        .job-scroll-area {
-            flex: 1; /* ยืดจนเต็มพื้นที่ที่เหลือ */
-            overflow-y: auto; /* ให้ Scroll แกนตั้ง */
-            padding-bottom: 60px; /* เผื่อที่ให้ Footer บัง */
-            padding-right: 5px; /* เผื่อ Scrollbar */
-        }
-
-        /* 4. การจัดวาง Grid (PN Card) */
-        .job-grid-container {
+        /* กำหนดโครงสร้างคอลัมน์ (PN, ชื่อ, Qty, ขาย, ต้นทุน, กำไร) */
+        .job-table-template {
             display: grid;
-            /* มือถือ 1 คอลัมน์, จอใหญ่ 2 คอลัมน์ */
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 10px;
+            /* ปรับสัดส่วนคอลัมน์ให้พอดีกับมือถือ (ชื่อสินค้าให้ยืดหดได้) */
+            grid-template-columns: 18% 27% 10% 15% 15% 15%; 
+            gap: 4px;
+            padding: 10px 5px;
+            align-items: center;
+            font-size: 11px; /* ลดขนาดตัวหนังสือลงนิดหน่อยให้พอดีบรรทัด */
+            border-bottom: 1px solid #eee;
         }
 
-        /* 5. การสลับสี Background (Zebra Striping) */
-        .job-card {
-            margin-bottom: 0 !important; /* ลบ Margin เดิมเพราะใช้ Gap ของ Grid แล้ว */
-            border: 1px solid #e0e0e0;
-            transition: transform 0.2s;
+        /* จัดแนวข้อความ */
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .text-truncate { 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; /* ถ้าชื่อยาวเกินไปให้เป็น ... */
         }
+
+        /* ส่วนหัวตาราง (Header) */
+        .job-table-header-row {
+            background-color: #eceff1;
+            font-weight: bold;
+            color: #455a64;
+            border-radius: 6px 6px 0 0; /* มนมุมบน */
+            font-size: 10px;
+        }
+
+        /* ส่วนเนื้อหา (Data Rows) */
+        .job-data-row {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        /* Zebra Striping (สลับสี) */
+        .job-data-row:nth-child(odd) { background-color: #ffffff; }
+        .job-data-row:nth-child(even) { background-color: #f1f8e9; } /* สีเขียวอ่อนจางๆ */
         
-        /* ตัวเลขคี่: สีขาว */
-        .job-card:nth-child(odd) {
-            background-color: #ffffff;
-            border-left: 5px solid #2c3e50; /* ขอบซ้ายสีน้ำเงินเข้ม */
-        }
-
-        /* ตัวเลขคู่: สีเขียวอ่อนจางๆ */
-        .job-card:nth-child(even) {
-            background-color: #e8f5e9; /* เขียวอ่อนมาก */
-            border-left: 5px solid #66bb6a; /* ขอบซ้ายสีเขียว */
-        }
-
-        /* Effect ตอนเอาเมาส์ชี้ */
-        .job-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
+        /* Effect ตอนกด */
+        .job-data-row:active { background-color: #bbdefb; }
     </style>
 </head>
 <body>
@@ -364,13 +350,21 @@
                             <div class="sum-card c-green"><small>กำไรขั้นต้น</small><div class="value" id="jobSumProfit">0</div></div>
                             <div class="sum-card c-gray"><small>% Margin</small><div class="value" id="jobSumPct">0%</div></div>
                         </div>
-                        <div class="list-header" style="margin-top:10px;">
-                            <span>สรุปรายสินค้า (Group by PN)</span>
+
+                        <div style="margin-top:10px;">
+                            <div class="job-table-template job-table-header-row">
+                                <div>PN</div>
+                                <div>สินค้า</div>
+                                <div class="text-right">Qty</div>
+                                <div class="text-right">ยอดขาย</div>
+                                <div class="text-right">ต้นทุน</div>
+                                <div class="text-right">กำไร</div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="job-scroll-area">
-                        <div id="jobList" class="job-grid-container"></div>
+                        <div id="jobList"></div>
                     </div>
 
                 </div>
@@ -688,37 +682,30 @@
 
         function renderJobList(data) {
             let html = '';
-            data.forEach(item => {
-                let pct = (item.revenue > 0) ? (item.profit / item.revenue * 100) : 0;
-                let pctClass = pct >= 0 ? 'pct-plus' : 'pct-minus';
-                let profitColor = item.profit >= 0 ? '#2e7d32' : '#c62828';
-
+            
+            data.forEach((item, index) => {
+                let profitColor = item.profit >= 0 ? '#2e7d32' : '#c62828'; // เขียว/แดง
+                
+                // ใช้ Grid Template เดียวกับ Header
                 html += `
-                <div class="job-card">
-                    <div class="job-name">${item.partName}</div>
-                    <div class="job-row">
-                        <span class="job-pn">${item.pn}</span>
-                        <span style="font-weight:bold;">${formatNum(item.qty)} ชิ้น</span>
-                    </div>
-                    <div class="job-row">
-                        <span class="text-gray">ยอดขาย:</span>
-                        <span>${formatNum(item.revenue)}</span>
-                    </div>
-                    <div class="job-row">
-                        <span class="text-gray">ต้นทุน:</span>
-                        <span>${formatNum(item.totalCost)}</span>
-                    </div>
-                    <div class="job-row" style="margin-top:5px; padding-top:5px; border-top:1px dashed #eee;">
-                        <span style="font-weight:bold;">กำไร:</span>
-                        <span style="font-weight:bold; color:${profitColor};">${formatNum(item.profit)} 
-                            <span class="pct-badge ${pctClass}">${pct.toFixed(2)}%</span>
-                        </span>
-                    </div>
+                <div class="job-table-template job-data-row" onclick="openJobDetail(${index})">
+                    <div style="font-weight:bold; color:var(--primary-color); word-break:break-word;">${item.pn}</div>
+                    <div class="text-truncate" style="color:#555;">${item.partName}</div>
+                    <div class="text-right" style="font-weight:600;">${formatNum(item.qty)}</div>
+                    <div class="text-right text-gray">${formatNum(item.revenue)}</div>
+                    <div class="text-right text-gray">${formatNum(item.totalCost)}</div>
+                    <div class="text-right" style="font-weight:bold; color:${profitColor};">${formatNum(item.profit)}</div>
                 </div>`;
             });
+            
             document.getElementById('jobList').innerHTML = html;
         }
 
+        // ฟังก์ชัน Dummy สำหรับรองรับการคลิก (เดี๋ยวค่อยมาทำรายละเอียด)
+        function openJobDetail(index) {
+            // ตอนนี้ยังไม่ต้องทำอะไร หรือจะ Alert ดูก่อนก็ได้ครับ
+            // Swal.fire('Selected', 'คุณเลือกรายการลำดับที่ ' + index, 'info');
+        }
 
         // ******************************************************
         // SALES DASHBOARD LOGIC (Existing)
