@@ -86,16 +86,18 @@
             font-size: 9px; padding: 2px 6px; border-radius: 10px; border: 1px solid #c8e6c9;
         }
         */
-        /* แก้ไข Badge ให้มาอยู่บรรทัดล่าง */
+        /* แก้ไข Badge ให้อยู่บรรทัดเดียวกับชื่อ */
         .period-badge {
-            display: inline-block;       /* ให้แสดงเป็นก้อนข้อความ */
-            margin-top: 8px;             /* เว้นระยะห่างจากชื่อระบบด้านบน */
+            display: inline-block;       /* แสดงผลแนวนอน */
+            margin-left: 5px;            /* เว้นห่างจากชื่อทางซ้าย 5px */
+            margin-top: 0;               /* เอา margin ด้านบนออก */
             background-color: #e8f5e9; 
             color: #2e7d32; 
-            font-size: 10px;             /* ขนาดตัวหนังสือ */
-            padding: 3px 8px;            /* ความอ้วนของปุ่ม */
-            border-radius: 12px;         /* ความมน */
-            border: 1px solid #c8e6c9;   /* ขอบสีเขียวอ่อน */
+            font-size: 10px;             
+            padding: 2px 6px;            
+            border-radius: 10px;         
+            border: 1px solid #c8e6c9;   
+            vertical-align: middle;      /* จัดกึ่งกลางแนวตั้งกับตัวหนังสือ */
         }
 
         .portal-footer {
@@ -471,18 +473,20 @@
                     // Badge Logic สำหรับ Job Cost
                     let badgeHtml = '';
                     if (sys.id === 'JOBCOST' && sys.lastPeriod) {
-                        // เก็บค่าไว้ใช้ตอนเปิดแอพ
                         lastJobPeriodGlobal = sys.lastPeriod;
-                        // แปลง 2025-11 เป็น 11/2025
                         let parts = sys.lastPeriod.split('-');
                         let badgeTxt = `${parts[1]}/${parts[0]}`;
-                        badgeHtml = `<div class="period-badge">Last: ${badgeTxt}</div>`;
+                        
+                        // *** ใช้ <span> เพื่อให้อยู่บรรทัดเดียวกัน ***
+                        badgeHtml = `<span class="period-badge">Last: ${badgeTxt}</span>`;
                     }
 
                     let el = document.createElement('div');
                     el.className = 'app-icon';
-                    //el.innerHTML = `${badgeHtml}${iconHtml}<div>${sys.name}</div>`;
-                    el.innerHTML = `${iconHtml}<div>${sys.name}</div>${badgeHtml}`;
+                    
+                    // *** เอา badgeHtml ต่อท้ายชื่อ ใน div เดียวกัน ***
+                    el.innerHTML = `${iconHtml}<div>${sys.name}${badgeHtml}</div>`;
+                    
                     el.onclick = () => openSystem(sys.id);
                     grid.appendChild(el);
                 });
