@@ -861,98 +861,64 @@
           }
           
           let title = '';
-          // ตัวแปรสำหรับเก็บข้อมูลที่ผ่านการคำนวณแล้ว
           let processedData = [];
 
-          // 1. เตรียมข้อมูล (Calculate Data & Sort Value)
-          // เราจะเพิ่ม property 'sortValue' เพื่อใช้เรียงลำดับ โดยไม่กระทบค่าจริง
+          // 1. เตรียมข้อมูล
           processedData = globalAggregatedData.map(d => {
-              let val = 0; // ค่าที่จะใช้เรียงลำดับและแสดง (กรณีไม่ใช่กราฟรวม)
-              
+              let val = 0; 
               if (typeIndex === 0) {
-                  val = d.totalSent;
-                  title = 'รายการส่งแล้ว (Sent)';
+                  val = d.totalSent; title = 'รายการส่งแล้ว (Sent)';
               } else if (typeIndex === 1) {
-                  val = Math.max(0, d.totalBacklog - d.totalPastDue);
-                  title = 'รายการรอส่ง (ไม่รวม Past Due)';
+                  val = Math.max(0, d.totalBacklog - d.totalPastDue); title = 'รายการรอส่ง (ไม่รวม Past Due)';
               } else if (typeIndex === 2) {
-                  val = d.totalPastDue;
-                  title = 'รายการเกินกำหนด (Past Due)';
+                  val = d.totalPastDue; title = 'รายการเกินกำหนด (Past Due)';
               } else if (typeIndex === 3) {
-                  val = d.totalSales; // ใช้ยอดขายรวมในการเรียงลำดับ
-                  title = 'ยอดขายรวมทั้งหมด (แยกตามสถานะ)';
+                  val = d.totalSales; title = 'ยอดขายรวมทั้งหมด (แยกตามสถานะ)';
               } else if (typeIndex === 4) {
-                  val = d.totalBacklog; 
-                  title = 'รายการรอส่งทั้งหมด (รวม Past Due)';
+                  val = d.totalBacklog; title = 'รายการรอส่งทั้งหมด (รวม Past Due)';
               }
               return { ...d, sortValue: val };
           });
 
-          // 2. กรองและเรียงลำดับ (เอาเฉพาะที่มีค่า > 0)
+          // 2. กรองและเรียงลำดับ
           let filteredData = processedData.filter(d => d.sortValue > 0);
           filteredData.sort((a, b) => b.sortValue - a.sortValue);
 
           // ตัดเหลือ 15 รายการ
-          if (filteredData.length > 15) {
-              filteredData = filteredData.slice(0, 15);
-          }
+          if (filteredData.length > 15) filteredData = filteredData.slice(0, 15);
 
           if (filteredData.length === 0) {
               Swal.fire('ไม่มีข้อมูล', 'ไม่มีรายการในหมวดหมู่นี้', 'info');
               return;
           }
 
-          // แสดงยอดรวมที่หัวข้อ
           let totalValue = filteredData.reduce((sum, item) => sum + item.sortValue, 0);
           document.getElementById('catModalSubtitle').innerText = `รวมมูลค่า ${formatMillion(totalValue)} ล้านบาท`;
 
-          // คำนวณความสูง Dynamic
           let dynamicHeight = (filteredData.length * 35) + 60; 
           document.getElementById('categoryChartContainer').style.height = dynamicHeight + 'px';
 
-          // Labels (ชื่อลูกค้า)
           let labels = filteredData.map(d => {
-              let n = d.name;
-              n = n.replace(/บริษัท|ห\.?จ\.?ก\.?|ห้างหุ้นส่วนจำกัด|จำกัด|[(]?มหาชน[)]?|company|ltd\.?|co\.?|inc\.?/gi, '');
-              n = n.replace(/[(].*?[)]/g, '');
-              n = n.split('สาขา')[0];
-              n = n.trim();
+              let n = d.name.replace(/บริษัท|ห\.?จ\.?ก\.?|ห้างหุ้นส่วนจำกัด|จำกัด|[(]?มหาชน[)]?|company|ltd\.?|co\.?|inc\.?/gi, '');
+              n = n.replace(/[(].*?[)]/g, '').split('สาขา')[0].trim();
               return n.length > 15 ? n.substring(0, 15) + '..' : n;
           });
 
-          // 3. เตรียม Datasets (จุดสำคัญที่แก้ไข)
+          // 3. สร้าง Datasets
           let datasets = [];
-          let isStacked = false; // ตัวแปรบอกว่ากราฟนี้ซ้อนกันไหม
+          let isStacked = false; 
 
           if (typeIndex === 3) {
-              // *** กรณีเลือกยอดรวม: ให้ทำ Stacked Chart 3 สี ***
+              // กราฟยอดรวมแบบ Stack
               isStacked = true;
               datasets = [
-                  {
-                      label: 'ส่งแล้ว',
-                      data: filteredData.map(d => d.totalSent),
-                      backgroundColor: '#66bb6a', // เขียว
-                      stack: 'totalStack',
-                      barPercentage: 0.6, categoryPercentage: 0.9 
-                  },
-                  {
-                      label: 'รอส่ง',
-                      data: filteredData.map(d => Math.max(0, d.totalBacklog - d.totalPastDue)),
-                      backgroundColor: '#ffa726', // ส้ม
-                      stack: 'totalStack',
-                      barPercentage: 0.6, categoryPercentage: 0.9 
-                  },
-                  {
-                      label: 'Past Due',
-                      data: filteredData.map(d => d.totalPastDue),
-                      backgroundColor: '#ef5350', // แดง
-                      stack: 'totalStack',
-                      barPercentage: 0.6, categoryPercentage: 0.9 
-                  }
+                  { label: 'ส่งแล้ว', data: filteredData.map(d => d.totalSent), backgroundColor: '#66bb6a', stack: 'totalStack', barPercentage: 0.6, categoryPercentage: 0.9 },
+                  { label: 'รอส่ง', data: filteredData.map(d => Math.max(0, d.totalBacklog - d.totalPastDue)), backgroundColor: '#ffa726', stack: 'totalStack', barPercentage: 0.6, categoryPercentage: 0.9 },
+                  { label: 'Past Due', data: filteredData.map(d => d.totalPastDue), backgroundColor: '#ef5350', stack: 'totalStack', barPercentage: 0.6, categoryPercentage: 0.9 }
               ];
           } else {
-              // *** กรณีเลือกหมวดอื่นๆ: กราฟแท่งเดียว สีเดียวเหมือนเดิม ***
-              let singleColor = '#42a5f5'; // Default Blue
+              // กราฟปกติ
+              let singleColor = '#42a5f5'; 
               if (typeIndex === 0) singleColor = '#66bb6a';
               else if (typeIndex === 1) singleColor = '#ffa726';
               else if (typeIndex === 2) singleColor = '#ef5350';
@@ -972,72 +938,94 @@
           const ctx = document.getElementById('categoryChart').getContext('2d');
           if (categoryChart) categoryChart.destroy();
 
+          // *** PLUGIN พิเศษ: วาดตัวเลขรวมที่ปลายกราฟ Stack ***
+          const totalLabelPlugin = {
+              id: 'totalLabelPlugin',
+              afterDatasetsDraw: function(chart) {
+                  // ทำงานเฉพาะตอนเป็น Stacked Chart (Index 3)
+                  if (!isStacked) return;
+
+                  const ctx = chart.ctx;
+                  
+                  // ดึง Meta ของ Dataset ตัวสุดท้าย (ตัวที่อยู่ขวาสุด)
+                  const meta = chart.getDatasetMeta(chart.data.datasets.length - 1);
+                  
+                  chart.data.labels.forEach((label, index) => {
+                      // คำนวณยอดรวมของ Row นั้น
+                      let total = 0;
+                      chart.data.datasets.forEach(ds => {
+                          total += ds.data[index];
+                      });
+
+                      // หาตำแหน่งปลายสุดของแท่งกราฟ
+                      const bar = meta.data[index];
+                      if (bar) {
+                          const xPos = bar.x; // ปลายสุดแกน X
+                          const yPos = bar.y; // ตำแหน่งแกน Y
+
+                          // วาดตัวเลข
+                          ctx.save();
+                          ctx.font = "bold 11px 'Prompt'"; // ฟอนต์เดียวกับระบบ
+                          ctx.fillStyle = '#333';          // สีเทาเข้ม
+                          ctx.textAlign = 'left';
+                          ctx.textBaseline = 'middle';
+                          // วาดห่างออกมา 5px
+                          ctx.fillText(formatMillion(total), xPos + 5, yPos);
+                          ctx.restore();
+                      }
+                  });
+              }
+          };
+
           categoryChart = new Chart(ctx, {
               type: 'bar',
-              plugins: [ChartDataLabels],
-              data: {
-                  labels: labels,
-                  datasets: datasets
-              },
+              plugins: [ChartDataLabels, totalLabelPlugin], // ใส่ Plugin เพิ่มเข้าไป
+              data: { labels: labels, datasets: datasets },
               options: {
-                  indexAxis: 'y', // กราฟแนวนอน
+                  indexAxis: 'y',
                   animation: false, 
-                  responsive: true,
-                  maintainAspectRatio: false,
+                  responsive: true, maintainAspectRatio: false,
                   
-                  // Padding ขวา
-                  layout: { padding: { right: 25, left: 0 } },
+                  // เพิ่ม Padding ขวาเป็น 55 เพื่อให้เลขยอดรวมไม่ตกขอบ
+                  layout: { padding: { right: 55, left: 0 } },
                   
                   events: ['click', 'touchstart'], 
-                  interaction: {
-                      mode: 'nearest', axis: 'y', intersect: false 
-                  },
+                  interaction: { mode: 'nearest', axis: 'y', intersect: false },
                   onClick: (e) => {
                       const chart = e.chart;
                       const canvasPosition = Chart.helpers.getRelativePosition(e, chart);
                       const dataY = chart.scales.y.getValueForPixel(canvasPosition.y);
                       const index = Math.round(dataY);
-
                       if (index >= 0 && index < filteredData.length) {
-                          let selectedCustomer = filteredData[index];
-                          setTimeout(() => { openModal(selectedCustomer); }, 50);
+                          setTimeout(() => { openModal(filteredData[index]); }, 50);
                       }
                   },
                   scales: {
-                      x: { 
-                          display: false,
-                          stacked: isStacked // เปิด Stack แกน X
-                      },
-                      y: { 
-                          stacked: isStacked, // เปิด Stack แกน Y
-                          grid: { display: false },
-                          ticks: { font: { size: 11 }, color: '#333', autoSkip: false } 
-                      }
+                      x: { display: false, stacked: isStacked },
+                      y: { stacked: isStacked, grid: { display: false }, ticks: { font: { size: 11 }, color: '#333', autoSkip: false } }
                   },
                   plugins: {
                       legend: { 
-                          // แสดง Legend เฉพาะตอนเป็นกราฟรวม (Stack)
                           display: isStacked, 
                           position: 'bottom',
                           labels: { boxWidth: 10, font: { size: 10 } }
                       },
                       datalabels: {
-                          // ถ้าเป็น Stack ให้แสดงตัวเลขข้างในแท่ง, ถ้าแท่งเดียวแสดงปลายแท่ง
+                          // ตัวเลขข้างในแท่ง (ถ้าไม่ใช่ Stack ให้แสดงปลายแท่งเหมือนเดิม)
                           anchor: isStacked ? 'center' : 'end', 
                           align: isStacked ? 'center' : 'end', 
-                          color: isStacked ? '#fff' : '#555', // Stack ตัวหนังสือขาว, ปกติเทาเข้ม
+                          color: isStacked ? '#fff' : '#555', 
                           font: { weight: 'bold', size: 10 },
                           formatter: function(value) { 
-                              // ถ้าค่าน้อยกว่า 0 หรือ 0 ไม่ต้องแสดง (กราฟจะได้ไม่รก)
                               if (value <= 0) return '';
-                              return formatMillion(value); 
+                              // ถ้าเป็น Stack ให้แสดงหน่วยล้าน (จะได้สั้นๆ) ถ้ากราฟเดี่ยวแสดงปกติ
+                              return isStacked ? formatMillion(value) : formatMillion(value); 
                           }
                       },
                       tooltip: { 
-                          enabled: true, // เปิด Tooltip ให้ดูไส้ในได้
+                          enabled: true,
                           callbacks: {
                               label: function(context) {
-                                  // Custom Tooltip ให้แสดงยอดเงินชัดเจน
                                   let label = context.dataset.label || '';
                                   if (label) label += ': ';
                                   label += formatNum(context.raw);
