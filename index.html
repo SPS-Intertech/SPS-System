@@ -577,27 +577,47 @@
 
         // *** Helper Functions เดิมของคุณ (ใช้งานต่อได้เลย) ***
         function aggregateData(rawDetails) {
-            let map = {};
-            if (!rawDetails || rawDetails.length === 0) return [];
-            rawDetails.forEach(item => {
-                let name = item.customer || "ไม่ระบุชื่อ";
-                let dueDate = item.dueDate; 
-                let sales = Number(item.sales || 0);
-                let backlog = Number(item.backlog || 0);
-                let sent = Number(item.sent || 0);
-                let pastDue = Number(item.pastDue || 0);
+          let map = {};
+          
+          if (!rawDetails || rawDetails.length === 0) return [];
 
-                if (!map[name]) {
-                    map[name] = { name: name, totalSales: 0, totalBacklog: 0, totalSent: 0, totalPastDue: 0, history: [] };
-                }
-                map[name].totalSales += sales;
-                map[name].totalBacklog += backlog;
-                map[name].totalSent += sent;
-                map[name].totalPastDue += pastDue;
-                map[name].history.push({ date: formatDateStr(dueDate), sales: sales, backlog: backlog, sent: sent, pastDue: pastDue });
-            });
-            return Object.values(map);
-        }
+          rawDetails.forEach(item => {
+              // รับค่า
+              let name = item.customer || "ไม่ระบุชื่อ";
+              let dueDate = item.dueDate; 
+              
+              let sales = Number(item.sales || 0);
+              let backlog = Number(item.backlog || 0);
+              let sent = Number(item.sent || 0);
+              let pastDue = Number(item.pastDue || 0);
+
+              // *** แก้ไขจุดที่ 2: กรองค่าที่เป็น 0 ทั้งหมดออก ***
+              // ถ้าไม่มี Sales, Backlog, Sent และ PastDue เลย ให้ข้ามรายการนี้ไป
+              if (sales === 0 && backlog === 0 && sent === 0 && pastDue === 0) {
+                  return;
+              }
+
+              if (!map[name]) {
+                  map[name] = {
+                      name: name,
+                      totalSales: 0, totalBacklog: 0, totalSent: 0, totalPastDue: 0,
+                      history: [] 
+                  };
+              }
+              
+              map[name].totalSales += sales;
+              map[name].totalBacklog += backlog;
+              map[name].totalSent += sent;
+              map[name].totalPastDue += pastDue;
+              
+              map[name].history.push({
+                  date: formatDateStr(dueDate),
+                  sales: sales, backlog: backlog, sent: sent, pastDue: pastDue
+              });
+          });
+          
+          return Object.values(map);
+      }
 
         function drawOverviewChart(sales, backlog, sent, due) {
             let netBacklog = Math.max(0, backlog - due);
@@ -705,56 +725,104 @@
 
         function openModalByIndex(index) { openModal(globalAggregatedData[index]); }
         function openModal(customerData) {
-            document.getElementById('detailModal').style.display = 'flex';
-            document.getElementById('modalCustName').innerText = customerData.name;
-            customerData.history.sort((a, b) => new Date(a.date) - new Date(b.date));
+          document.getElementById('detailModal').style.display = 'flex';
+          document.getElementById('modalCustName').innerText = customerData.name;
 
-            const ctx = document.getElementById('detailChart').getContext('2d');
-            if (detailChart) detailChart.destroy();
+          // 1. เรียงลำดับวันที่
+          customerData.history.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            const labels = customerData.history.map(h => {
-                let d = new Date(h.date);
-                return isNaN(d) ? h.date : d.getDate() + "/" + (d.getMonth()+1);
-            });
-            let custNetBacklog = Math.max(0, customerData.totalBacklog - customerData.totalPastDue);
+          // 2. เตรียมกราฟ
+          const ctx = document.getElementById('detailChart').getContext('2d');
+          if (detailChart) detailChart.destroy();
 
-            detailChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'ส่ง: ' + formatNum(customerData.totalSent), data: customerData.history.map(h => h.sent), backgroundColor: '#66bb6a' },
-                        { label: 'ค้าง: ' + formatNum(custNetBacklog), data: customerData.history.map(h => Math.max(0, h.backlog - h.pastDue)), backgroundColor: '#ffa726' },
-                        { label: 'Due: ' + formatNum(customerData.totalPastDue), data: customerData.history.map(h => h.pastDue), backgroundColor: '#ef5350' }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
-                    plugins: {
-                        legend: { position: 'bottom', labels: { font: { size: 12, weight: 'bold' }, boxWidth: 12, padding: 15 } },
-                        tooltip: { callbacks: { label: function(context) { let labelName = context.dataset.label.split(':')[0]; return labelName + ': ' + formatNum(context.raw); } } }
+          const labels = customerData.history.map(h => {
+             // *** แก้ไขจุดที่ 1: ป้องกันวันที่เลื่อน โดยการหั่น String ตรงๆ ***
+             // รับค่ามาเป็น "yyyy-mm-dd" เช่น "2025-12-08"
+             if (h.date && h.date.includes('-')) {
+                 let parts = h.date.split('-'); // ได้ [2025, 12, 08]
+                 // สร้าง Date object: ปี, เดือน(เริ่มที่ 0), วัน
+                 let d = new Date(parts[0], parts[1] - 1, parts[2]); 
+                 return d.getDate() + "/" + (d.getMonth() + 1);
+             }
+             // ถ้า format ไม่ใช่แบบขีด ก็ใช้วิธีเดิมสำรองไว้
+             let d = new Date(h.date);
+             return isNaN(d) ? h.date : d.getDate() + "/" + (d.getMonth()+1);
+          });
+          
+          let custNetBacklog = customerData.totalBacklog - customerData.totalPastDue;
+          if (custNetBacklog < 0) custNetBacklog = 0;
+
+          detailChart = new Chart(ctx, {
+             type: 'bar',
+             data: {
+                 labels: labels,
+                 datasets: [
+                     { 
+                         label: 'ส่ง: ' + formatNum(customerData.totalSent), 
+                         data: customerData.history.map(h => h.sent), 
+                         backgroundColor: '#66bb6a' 
+                     },
+                     { 
+                         label: 'ค้าง: ' + formatNum(custNetBacklog), 
+                         data: customerData.history.map(h => Math.max(0, h.backlog - h.pastDue)), 
+                         backgroundColor: '#ffa726' 
+                     },
+                     { 
+                         label: 'Due: ' + formatNum(customerData.totalPastDue), 
+                         data: customerData.history.map(h => h.pastDue), 
+                         backgroundColor: '#ef5350' 
+                     }
+                 ]
+             },
+             options: {
+                 responsive: true, 
+                 maintainAspectRatio: false,
+                 interaction: { mode: 'index', intersect: false },
+                 scales: { 
+                     x: { stacked: true }, 
+                     y: { stacked: true, beginAtZero: true } 
+                 },
+                 plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 12, weight: 'bold' }, boxWidth: 12, padding: 15 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let labelName = context.dataset.label.split(':')[0];
+                                return labelName + ': ' + formatNum(context.raw);
+                            }
+                        }
                     }
-                }
-            });
+                 }
+             }
+          });
 
-            let tableHtml = `<table style="width:100%; border-collapse: collapse; text-align:right; font-size:13px;">
+          // 3. สร้างตาราง (Copy โค้ดสร้างตารางเดิมมาใส่ตรงนี้ได้เลยครับ หรือใช้ของเดิมที่อยู่ด้านล่างต่อจากนี้)
+          let tableHtml = `<table style="width:100%; border-collapse: collapse; text-align:right; font-size:13px;">
              <tr style="background:#f5f5f5; text-align:center; font-weight:bold; color:#555;">
-                <th style="padding:8px;">วันที่</th><th style="padding:8px;">ส่ง</th><th style="padding:8px;">ค้าง</th><th style="padding:8px;">Due</th>
+                <th style="padding:8px;">วันที่</th>
+                <th style="padding:8px;">ส่ง</th>
+                <th style="padding:8px;">ค้าง</th>
+                <th style="padding:8px;">Due</th>
              </tr>`;
-            customerData.history.forEach(h => {
-                let rowNetBacklog = Math.max(0, h.backlog - h.pastDue);
-                tableHtml += `<tr style="border-bottom:1px solid #eee;">
-                    <td style="text-align:center; padding:6px; color:#555;">${h.date}</td>
-                    <td style="padding:6px; color:#66bb6a;">${formatNum(h.sent)}</td>
-                    <td style="padding:6px; color:#ffa726;">${formatNum(rowNetBacklog)}</td>
-                    <td style="padding:6px; color:#ef5350;">${formatNum(h.pastDue)}</td>
-                </tr>`;
-            });
-            tableHtml += `</table>`;
-            document.getElementById('modalTable').innerHTML = tableHtml;
-        }
+          
+          customerData.history.forEach(h => {
+             let rowNetBacklog = h.backlog - h.pastDue;
+             if (rowNetBacklog < 0) rowNetBacklog = 0;
+
+             tableHtml += `
+             <tr style="border-bottom:1px solid #eee;">
+                <td style="text-align:center; padding:6px; color:#555;">${h.date}</td>
+                <td style="padding:6px; color:#66bb6a;">${formatNum(h.sent)}</td>
+                <td style="padding:6px; color:#ffa726;">${formatNum(rowNetBacklog)}</td>
+                <td style="padding:6px; color:#ef5350;">${formatNum(h.pastDue)}</td>
+             </tr>`;
+          });
+          tableHtml += `</table>`;
+          document.getElementById('modalTable').innerHTML = tableHtml;
+      }
 
         function openCategoryModal(typeIndex) {
           // 1. แปลงเป็นตัวเลขให้ชัวร์
