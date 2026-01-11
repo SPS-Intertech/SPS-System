@@ -660,8 +660,14 @@
                     totalPastDue += c.totalPastDue;
                 });
 
+                // *** จุดที่แก้ไข: คำนวณยอดรอส่งสุทธิ (เอา Backlog ตั้ง - Past Due ออก) ***
+                let netTotalBacklog = Math.max(0, totalBacklog - totalPastDue);
+
                 document.getElementById('sumSales').innerText = formatNum(totalSales);
-                document.getElementById('sumBacklog').innerText = formatNum(totalBacklog);
+                
+                // ใช้ยอดสุทธิที่คำนวณใหม่แสดงในช่อง "รอส่ง"
+                document.getElementById('sumBacklog').innerText = formatNum(netTotalBacklog); 
+                
                 document.getElementById('sumSent').innerText = formatNum(totalSent);
                 document.getElementById('sumDue').innerText = formatNum(totalPastDue);
 
