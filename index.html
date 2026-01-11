@@ -217,6 +217,28 @@
         
         /* Effect ตอนกด */
         .job-data-row:active { background-color: #bbdefb; }
+
+        /* --- JOB COST: STICKY HEADER SYSTEM --- */
+        
+        /* 1. กรอบหลัก กำหนดความสูงเพื่อให้เกิด Scroll ภายใน */
+        .job-content-wrapper {
+            height: calc(100vh - 190px); /* ความสูงจอ - ความสูง Header หลัก (Logo+Menu) โดยประมาณ */
+            overflow-y: auto;            /* ให้ Scroll ได้เฉพาะในนี้ */
+            padding-bottom: 60px;        /* เผื่อที่ Footer */
+            position: relative;
+        }
+
+        /* 2. หัวตารางที่จะติดหนึบ (Sticky) */
+        .job-sticky-header {
+            position: sticky;       /* สั่งให้ติดหนึบ */
+            top: 0;                 /* ติดที่ขอบบนสุดของพื้นที่ Scroll */
+            z-index: 10;            /* ให้ลอยอยู่เหนือเนื้อหา */
+            background-color: #f4f6f8; /* สีพื้นหลัง (ต้องมี เพื่อบังเนื้อหาที่เลื่อนผ่าน) */
+            padding-top: 5px;
+            padding-bottom: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* เงาเล็กน้อยให้ดูมีมิติ */
+        }
+        
     </style>
 </head>
 <body>
@@ -329,45 +351,34 @@
                   <button class="check-btn" onclick="processJobCostData()">Check</button>
                 </div>
             </div>
-            <!--
-            <div id="jobContent" style="display:none;">
-                <div class="summary-grid">
-                  <div class="sum-card c-blue"><small>ยอดขายรวม</small><div class="value" id="jobSumRev">0</div></div>
-                  <div class="sum-card c-orange"><small>ต้นทุนรวม</small><div class="value" id="jobSumCost">0</div></div>
-                  <div class="sum-card c-green"><small>กำไรขั้นต้น</small><div class="value" id="jobSumProfit">0</div></div>
-                  <div class="sum-card c-gray"><small>% Margin</small><div class="value" id="jobSumPct">0%</div></div>
-                </div>
 
-                <div class="list-header"><span>สรุปรายสินค้า (Group by PN)</span></div>
-                <div id="jobList"></div>
-            </div> -->
             <div id="jobContent" style="display:none;">
                 
                 <div class="job-content-wrapper">
 
-                    <div class="job-fixed-header">
-                        <div class="summary-grid">
-                            <div class="sum-card c-blue"><small>ยอดขายรวม</small><div class="value" id="jobSumRev">0</div></div>
-                            <div class="sum-card c-orange"><small>ต้นทุนรวม</small><div class="value" id="jobSumCost">0</div></div>
-                            <div class="sum-card c-green"><small>กำไรขั้นต้น</small><div class="value" id="jobSumProfit">0</div></div>
-                            <div class="sum-card c-gray"><small>% Margin</small><div class="value" id="jobSumPct">0%</div></div>
-                        </div>
+                    <div class="summary-grid">
+                        <div class="sum-card c-blue"><small>ยอดขายรวม</small><div class="value" id="jobSumRev">0</div></div>
+                        <div class="sum-card c-orange"><small>ต้นทุนรวม</small><div class="value" id="jobSumCost">0</div></div>
+                        <div class="sum-card c-green"><small>กำไรขั้นต้น</small><div class="value" id="jobSumProfit">0</div></div>
+                        <div class="sum-card c-gray"><small>% Margin</small><div class="value" id="jobSumPct">0%</div></div>
+                    </div>
 
-                        <div style="margin-top:10px;">
-                            <div class="job-table-template job-table-header-row">
-                                <div>PN</div>
-                                <div class="text-right">Qty</div>
-                                <div class="text-right">ยอดขาย</div>
-                                <div class="text-right">ต้นทุน</div>
-                                <div class="text-right">กำไร</div>
-                                <div class="text-right">%</div> </div>
+                    <div class="job-sticky-header">
+                        <div class="list-header" style="margin-bottom:5px; padding:0 2px;">
+                            <span>สรุปรายสินค้า (Group by PN)</span>
+                        </div>
+                        <div class="job-table-template job-table-header-row">
+                            <div>PN</div>
+                            <div class="text-right">Qty</div>
+                            <div class="text-right">ยอดขาย</div>
+                            <div class="text-right">ต้นทุน</div>
+                            <div class="text-right">กำไร</div>
+                            <div class="text-right">%</div>
                         </div>
                     </div>
 
-                    <div class="job-scroll-area">
-                        <div id="jobList"></div>
-                    </div>
-
+                    <div id="jobList"></div>
+                    
                 </div>
             </div>
 
