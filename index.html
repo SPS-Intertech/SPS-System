@@ -772,7 +772,7 @@
                     scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true } },
                     plugins: { 
                         legend: { position: 'bottom', labels: { font: { size: 12 }, boxWidth: 12, padding: 15 } },
-                        tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': ' + formatNum(context.raw); } } }
+                        tooltip: {enabled: false, callbacks: { label: function(context) { return context.dataset.label + ': ' + formatNum(context.raw); } } }
                     }
                 }
             });
@@ -836,7 +836,7 @@
                     scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
                     plugins: {
                         legend: { position: 'bottom', labels: { font: { size: 12, weight: 'bold' }, boxWidth: 12, padding: 15 } },
-                        tooltip: { callbacks: { label: function(context) { let labelName = context.dataset.label.split(':')[0]; return labelName + ': ' + formatNum(context.raw); } } }
+                        tooltip: {enabled: false, callbacks: { label: function(context) { let labelName = context.dataset.label.split(':')[0]; return labelName + ': ' + formatNum(context.raw); } } }
                     }
                 }
             });
