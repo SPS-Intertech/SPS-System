@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>S.P.S Intertech Portal</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="https://thamanoonni.github.io/ta/icon.png">
-    <link rel="apple-touch-icon" href="https://thamanoonni.github.io/ta/icon.png">    
     
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -16,24 +13,23 @@
 
     <script>
         // ******************************************************
-        // 1. ตั้งค่าการเชื่อมต่อ (แก้ไขตรงนี้)
+        // 1. ตั้งค่าการเชื่อมต่อ (URL เดิมของคุณ)
         // ******************************************************
         const API_URL = 'https://script.google.com/macros/s/AKfycbz1H8BUqtNHfgGwxnbJzUUI9Y63Qdq-danHbSsmMZP6oTXYcdjyhHZAapN7MybRFJ4V/exec'; 
     </script>
 
     <style>
-        
         :root {
             --primary-color: #2c3e50;
             --bg-blue: #42a5f5;
             --bg-green: #66bb6a;
             --bg-red: #ef5350;
             --bg-orange: #ffa726;
+            --bg-gray: #8d6e63;
         }
         * { box-sizing: border-box; }
         body { font-family: 'Prompt', sans-serif; background-color: #f4f6f8; margin: 0; padding: 0; color: #333; overflow-x: hidden; }
         
-        /* --- SPA Utilities --- */
         .view-section { display: none; min-height: 100vh; }
         .active-view { display: block; }
         
@@ -61,18 +57,42 @@
             background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;
         }
+        .profile-section { display: flex; align-items: center; gap: 15px; }
+        .profile-img { 
+            width: 50px; height: 50px; border-radius: 50%; object-fit: cover; 
+            border: 2px solid #eee; background-color: #ddd;
+        }
+        .portal-content { padding-bottom: 80px; }
         .portal-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; padding: 20px; max-width: 800px; margin: 0 auto;
         }
         .app-icon {
             background: white; border-radius: 15px; padding: 20px 10px; text-align: center; cursor: pointer;
             box-shadow: 0 3px 10px rgba(0,0,0,0.05); transition: transform 0.2s; border: 1px solid transparent;
+            position: relative; /* สำหรับ Badge */
         }
         .app-icon:hover { transform: translateY(-3px); border-color: var(--bg-blue); }
         .app-icon i { font-size: 30px; margin-bottom: 10px; color: var(--primary-color); }
         .app-icon div { font-size: 13px; font-weight: 500; }
+        
+        /* Badge สำหรับ Last Period */
+        .period-badge {
+            position: absolute; top: 5px; right: 5px; 
+            background-color: #e8f5e9; color: #2e7d32; 
+            font-size: 9px; padding: 2px 6px; border-radius: 10px; border: 1px solid #c8e6c9;
+        }
 
-        /* --- App Container (Sale Dashboard Styles เดิมของคุณ) --- */
+        .portal-footer {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: white; padding: 15px; text-align: center;
+            border-top: 1px solid #f0f0f0; box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
+            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 10px;
+            z-index: 100;
+        }
+        .footer-logo { height: 35px; width: auto; opacity: 1.0; }
+        .footer-text { font-size: 16px; color: #2c3e50; font-weight: 600; }
+
+        /* --- App Shared Styles --- */
         .dashboard-wrapper { padding: 10px; max-width: 800px; margin: 0 auto; padding-bottom: 50px; }
         .header-section { background: white; padding: 10px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 10px; position: relative; }
         .back-home-btn { position: absolute; top: 10px; right: 10px; background: #eee; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
@@ -84,35 +104,45 @@
         .input-group { display: flex; gap: 10px; align-items: center; }
         input[type="month"] { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Prompt', sans-serif; font-size: 16px; background: #f9f9f9; }
         .check-btn { flex: 0 0 80px; padding: 10px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
-        
+
+        /* Summary Cards */
         .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 15px; text-align: center; }
-        .sum-card { padding: 8px 2px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .sum-card { padding: 8px 2px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor:pointer; background: white;}
         .sum-card small { font-size: 9px; font-weight: 600; display: block; margin-bottom: 2px; opacity:0.9; }
         .sum-card .value { font-size: 12px; font-weight: bold; word-break: break-all;}
+        
+        /* Colors */
         .c-blue { background-color: var(--bg-blue); color: white; }
         .c-green { background-color: var(--bg-green); color: white; }
         .c-red { background-color: var(--bg-red); color: white; }
         .c-orange { background-color: var(--bg-orange); color: white; }
+        .c-gray { background-color: var(--bg-gray); color: white; }
 
+        /* Chart & List */
         .chart-wrapper { background: white; border-radius: 12px; padding: 10px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; padding-left: 5px; border-left: 4px solid var(--primary-color); color: var(--primary-color); }
         .chart-box { height: 250px; position: relative; }
 
         .list-header { font-weight: bold; margin-bottom: 10px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center;}
         .list-item { background: white; border-radius: 10px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 5px solid transparent; cursor: pointer; }
-        .has-due { border-left-color: var(--bg-red); }
-        .no-due { border-left-color: var(--bg-green); }
-        .cust-header { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .cust-name { font-weight: 600; font-size: 15px; color: var(--primary-color); width: 85%; }
-        .row-detail { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; }
         
+        .row-detail { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; }
         .text-red { color: #d32f2f; font-weight: bold; }
         .text-blue { color: #1976d2; font-weight: bold; }
         .text-orange { color: #f57c00; font-weight: bold; }
         .text-green { color: #66bb6a; font-weight: bold; }
         .text-gray { color: #757575; }
 
-        /* Modal */
+        /* Job Cost Specific Styles */
+        .job-card { background: white; border-radius: 10px; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .job-pn { font-weight: bold; color: var(--primary-color); font-size: 15px; }
+        .job-name { font-size: 12px; color: #666; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px;}
+        .job-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px; }
+        .pct-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #eee; }
+        .pct-plus { background: #e8f5e9; color: #2e7d32; }
+        .pct-minus { background: #ffebee; color: #c62828; }
+
+        /* Modals */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 99999; display: none; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
         .modal-content { background: white; width: 90%; max-width: 600px; max-height: 90vh; border-radius: 15px; padding: 20px; position: relative; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .close-btn { position: absolute; top: 15px; right: 15px; background: #f1f1f1; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 18px; color: #666; cursor: pointer; }
@@ -120,52 +150,9 @@
         
         #loading, #emptyState { text-align: center; color: #666; margin-top: 20px; display: none; }
         .my-swal-zindex { z-index: 200000 !important; }
+        .swal2-container { z-index: 200000 !important; }
         #categoryModal { z-index: 9000 !important; }
         #detailModal { z-index: 9500 !important; }
-        .swal2-container { z-index: 200000 !important; }
-        /* --- เพิ่ม CSS สำหรับ Profile และ Footer --- */
-        .profile-section { display: flex; align-items: center; gap: 15px; }
-        .profile-img { 
-            width: 50px; height: 50px; border-radius: 50%; object-fit: cover; 
-            border: 2px solid #eee; background-color: #ddd;
-        }
-        .portal-content { padding-bottom: 80px; /* เว้นที่ให้ Footer */ }
-        /*
-        .portal-footer {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: white; padding: 15px; text-align: center;
-            border-top: 1px solid #f0f0f0; box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-            z-index: 100;
-        }
-        .footer-logo { height: 30px; width: auto; opacity: 0.8; }
-        .footer-text { font-size: 10px; color: #999; font-weight: 300; } */
-        /* --- แก้ไขส่วน Footer --- */
-        .portal-footer {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: white; padding: 15px; text-align: center;
-            border-top: 1px solid #f0f0f0; box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
-            
-            /* ใช้ Flexbox แนวนอน (Row) เพื่อให้อยู่บรรทัดเดียวกัน */
-            display: flex; 
-            flex-direction: row; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px; /* ระยะห่างระหว่าง Logo กับชื่อ */
-            z-index: 100;
-        }
-        
-        .footer-logo { 
-            height: 35px; /* ปรับ Logo ให้ใหญ่ขึ้นนิดหน่อย (เดิม 30) */
-            width: auto; 
-            opacity: 1.0; /* ปรับให้ชัดขึ้น (เดิม 0.8) */
-        }
-        
-        .footer-text { 
-            font-size: 14px; /* ขยายตัวหนังสือ (เดิม 10px) */
-            color: #2c3e50; /* ปรับสีให้เข้มขึ้นให้อ่านง่าย */
-            font-weight: 600; /* ตัวหนาขึ้น */
-        }
     </style>
 </head>
 <body>
@@ -181,17 +168,14 @@
             </div>
         </div>
     </div>
+
     <div id="view-set-password" class="view-section">
         <div class="login-container">
             <div class="login-box">
                 <h3 style="margin:0 0 10px 0;">ตั้งรหัสผ่านใหม่</h3>
-                <p style="font-size:12px; color:#666; margin-bottom:20px;">
-                    บัญชีของคุณยังไม่มีรหัสผ่าน<br>กรุณาตั้งรหัสผ่านเพื่อเข้าใช้งาน
-                </p>
-                
+                <p style="font-size:12px; color:#666; margin-bottom:20px;">บัญชีของคุณยังไม่มีรหัสผ่าน<br>กรุณาตั้งรหัสผ่านเพื่อเข้าใช้งาน</p>
                 <input type="password" id="newPass" class="login-input" placeholder="รหัสผ่านใหม่ (ขั้นต่ำ 6 ตัว)">
                 <input type="password" id="confirmPass" class="login-input" placeholder="ยืนยันรหัสผ่านอีกครั้ง">
-                
                 <button onclick="doSetNewPassword()" class="login-btn" style="background-color: var(--bg-green);">บันทึกรหัสผ่าน</button>
                 <button onclick="switchView('view-login')" class="login-btn" style="background-color: #999; margin-top:5px;">ยกเลิก</button>
             </div>
@@ -220,69 +204,82 @@
 
         <div class="portal-footer">
             <img src="https://drive.google.com/thumbnail?id=1gyn_N2ZR52d17UgWmta4Q3JjegLlbcaO&sz=w1000" class="footer-logo">
-            <div class="footer-text">S.P.S. Intertech Public Co.,Ltd.</div>
+            <div class="footer-text">S.P.S Intertech Public Co.,Ltd.</div>
         </div>
     </div>
 
     <div id="view-app-sale" class="view-section">
         <div class="dashboard-wrapper">
             <div class="header-section">
-                <button class="back-home-btn" onclick="switchView('view-portal')">
-                    <i class="fa-solid fa-house"></i> เมนูหลัก
-                </button>
+                <button class="back-home-btn" onclick="switchView('view-portal')"><i class="fa-solid fa-house"></i> เมนูหลัก</button>
                 <div class="brand-box">
                    <img src="https://drive.google.com/thumbnail?id=1gyn_N2ZR52d17UgWmta4Q3JjegLlbcaO&sz=w1000" alt="Logo" class="logo-img">
-                   <div class="company-info">
-                     <h2>S.P.S Intertech</h2>
-                     <p>Sales Dashboard System</p>
-                   </div>
+                   <div class="company-info"><h2>S.P.S Intertech</h2><p>Sales Dashboard</p></div>
                 </div>
                 <div class="last-update">Update: <span id="lastUpdatedTxt">-</span></div>
                 <div class="input-group">
-                  <input type="month" id="monthPicker" onchange="onDateChanged()">
+                  <input type="month" id="monthPicker" onchange="onDateChanged('sale')">
                   <button class="check-btn" onclick="processSaleData()">Check</button>
                 </div>
             </div>
 
             <div id="dashboardContent" style="display:none;">
                 <div class="summary-grid">
-                  <div class="sum-card c-blue" onclick="openCategoryModal(3)" style="cursor:pointer">
-                      <small>ยอดขายรวม</small><div class="value" id="sumSales">0</div>
-                  </div>
-                  <div class="sum-card c-green" onclick="openCategoryModal(0)" style="cursor:pointer">
-                      <small>ส่งแล้ว</small><div class="value" id="sumSent">0</div>
-                  </div>
-                  <div class="sum-card c-orange" onclick="openCategoryModal(1)" style="cursor:pointer">
-                      <small>รอส่ง</small><div class="value" id="sumBacklog">0</div>
-                  </div>
-                  <div class="sum-card c-red" onclick="openCategoryModal(2)" style="cursor:pointer">
-                      <small>Past Due</small><div class="value" id="sumDue">0</div>
-                  </div>
+                  <div class="sum-card c-blue" onclick="openCategoryModal(3)"><small>ยอดขายรวม</small><div class="value" id="sumSales">0</div></div>
+                  <div class="sum-card c-green" onclick="openCategoryModal(0)"><small>ส่งแล้ว</small><div class="value" id="sumSent">0</div></div>
+                  <div class="sum-card c-orange" onclick="openCategoryModal(1)"><small>รอส่ง</small><div class="value" id="sumBacklog">0</div></div>
+                  <div class="sum-card c-red" onclick="openCategoryModal(2)"><small>Past Due</small><div class="value" id="sumDue">0</div></div>
                 </div>
 
                 <div class="chart-wrapper">
                      <div class="chart-title" id="chartTitleText">ภาพรวมประจำเดือน</div>
                      <div class="chart-box" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; padding: 10px; height: auto; min-height: 250px;">
-                        <div style="width: 55%; height: 220px; position: relative;">
-                            <canvas id="overviewChart"></canvas>
-                        </div>
+                        <div style="width: 55%; height: 220px; position: relative;"><canvas id="overviewChart"></canvas></div>
                         <div id="customLegend" style="width: 45%; padding-left: 10px;"></div>
                      </div>
                 </div>
 
                 <div class="chart-wrapper">
                      <div class="chart-title">Top 5 ยอดขายสูงสุด</div>
-                     <div class="chart-box" style="height: 300px;">
-                        <canvas id="customerChart"></canvas>
-                     </div>
+                     <div class="chart-box" style="height: 300px;"><canvas id="customerChart"></canvas></div>
                 </div>
 
                 <div class="list-header"><span>รายละเอียดลูกค้า</span><span style="font-size:11px; color:#666;">กดเพื่อดู Due Date</span></div>
                 <div id="dataList"></div>
             </div>
+            
+            <div id="loadingSale" style="display:none; text-align:center; margin-top:20px;">กำลังโหลดข้อมูล...</div>
+        </div>
+    </div>
 
-            <div id="loading">กำลังโหลดข้อมูล...</div>
-            <div id="emptyState"><p>กรุณากดปุ่ม <b>"Check"</b> เพื่อดึงข้อมูล</p></div>
+    <div id="view-app-jobcost" class="view-section">
+        <div class="dashboard-wrapper">
+            <div class="header-section">
+                <button class="back-home-btn" onclick="switchView('view-portal')"><i class="fa-solid fa-house"></i> เมนูหลัก</button>
+                <div class="brand-box">
+                   <img src="https://drive.google.com/thumbnail?id=1gyn_N2ZR52d17UgWmta4Q3JjegLlbcaO&sz=w1000" alt="Logo" class="logo-img">
+                   <div class="company-info"><h2>S.P.S Intertech</h2><p>Job Closing Cost</p></div>
+                </div>
+                <div class="input-group" style="margin-top:10px;">
+                  <input type="month" id="jobMonthPicker" onchange="onDateChanged('job')">
+                  <button class="check-btn" onclick="processJobCostData()">Check</button>
+                </div>
+            </div>
+
+            <div id="jobContent" style="display:none;">
+                <div class="summary-grid">
+                  <div class="sum-card c-blue"><small>ยอดขายรวม</small><div class="value" id="jobSumRev">0</div></div>
+                  <div class="sum-card c-orange"><small>ต้นทุนรวม</small><div class="value" id="jobSumCost">0</div></div>
+                  <div class="sum-card c-green"><small>กำไรขั้นต้น</small><div class="value" id="jobSumProfit">0</div></div>
+                  <div class="sum-card c-gray"><small>% Margin</small><div class="value" id="jobSumPct">0%</div></div>
+                </div>
+
+                <div class="list-header"><span>สรุปรายสินค้า (Group by PN)</span></div>
+                <div id="jobList"></div>
+            </div>
+
+            <div id="loadingJob" style="display:none; text-align:center; margin-top:20px;">กำลังโหลดข้อมูล...</div>
+            <div id="emptyJob" style="display:none; text-align:center; margin-top:20px; color:#666;">ไม่พบข้อมูลในเดือนนี้</div>
         </div>
     </div>
 
@@ -313,54 +310,12 @@
         // ******************************************************
         // SYSTEM LOGIC (Core)
         // ******************************************************
-        // install
-        // 2. Logic สำหรับปุ่ม "ติดตั้งลงเครื่อง"
-  let deferredPrompt;
-  
-  window.addEventListener('beforeinstallprompt', (e) => {
-    // ป้องกันไม่ให้ Chrome โชว์แถบอัตโนมัติ (เราจะโชว์เอง)
-    e.preventDefault();
-    deferredPrompt = e;
-    
-    // เรียกฟังก์ชันแสดงปุ่มติดตั้ง (ท่านต้องสร้างปุ่มนี้ใน HTML)
-    showInstallPromotion(); 
-  });
-
-  function showInstallPromotion() {
-      // สร้างปุ่มติดตั้งลอยขึ้นมา หรือ แทรกในหน้า Login
-      // ตัวอย่าง: ใช้ SweetAlert ที่ท่านมีอยู่แล้ว
-      Swal.fire({
-          title: 'ติดตั้งแอป',
-          text: 'เพื่อความสะดวกในการใช้งาน',
-          icon: 'info',
-          showCancelButton: true,
-          confirmButtonText: 'ติดตั้งเลย',
-          cancelButtonText: 'ไว้ทีหลัง',
-          confirmButtonColor: '#0d6efd'
-      }).then((result) => {
-          if (result.isConfirmed) {
-              // สั่งให้ติดตั้ง
-              deferredPrompt.prompt();
-              deferredPrompt.userChoice.then((choiceResult) => {
-                  if (choiceResult.outcome === 'accepted') {
-                      console.log('User accepted the A2HS prompt');
-                  }
-                  deferredPrompt = null;
-              });
-          }
-      });
-  }
-        // end install
-
         
         let currentUser = null;
+        let lastJobPeriodGlobal = ""; // เก็บค่าเดือนล่าสุดของ Job Cost
 
-        // ฟังก์ชันกลางสำหรับเรียก API (ใช้แทน google.script.run)
         async function fetchAPI(payload) {
             try {
-                // ส่ง request ไปยัง Google Apps Script (Web App)
-                // ต้องใช้ mode: 'no-cors' ไม่ได้ เพราะเราต้องการอ่าน response JSON
-                // แต่ Google Apps Script Web App รองรับ CORS โดยธรรมชาติถ้า Deploy ถูกต้อง
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     body: JSON.stringify(payload)
@@ -376,12 +331,10 @@
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
             document.getElementById(viewId).classList.add('active-view');
+            window.scrollTo(0, 0);
         }
 
         // --- LOGIN FUNCTION ---
-        // ตัวแปรเก็บ Username ชั่วคราว ระหว่างรอตั้งรหัส
-        let tempUserForSetup = '';
-
         async function doLogin() {
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
@@ -397,12 +350,8 @@
                 currentUser = res;
                 document.getElementById('dispName').innerText = res.name;
                 
-                // *** เพิ่ม: จัดการรูปโปรไฟล์ ***
-                let imgUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; // รูป Default
-                if (res.photo) {
-                    // แปลง ID เป็น URL
-                    imgUrl = `https://drive.google.com/thumbnail?id=${res.photo}&sz=w100`;
-                }
+                let imgUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png"; 
+                if (res.photo) imgUrl = `https://drive.google.com/thumbnail?id=${res.photo}&sz=w100`;
                 document.getElementById('userImg').src = imgUrl;
 
                 loadPortalApps(res.roles);
@@ -419,37 +368,21 @@
             }
         }
 
+        let tempUserForSetup = '';
         async function doSetNewPassword() {
             const p1 = document.getElementById('newPass').value;
             const p2 = document.getElementById('confirmPass').value;
-
-            // 1. ตรวจสอบความยาว
-            if (p1.length < 6) {
-                Swal.fire('รหัสผ่านสั้นเกินไป', 'ต้องมีความยาวอย่างน้อย 6 ตัวอักษร', 'warning');
-                return;
-            }
-
-            // 2. ตรวจสอบการยืนยัน
-            if (p1 !== p2) {
-                Swal.fire('รหัสผ่านไม่ตรงกัน', 'กรุณากรอกช่องยืนยันให้ตรงกับรหัสผ่าน', 'warning');
-                return;
-            }
+            if (p1.length < 6) { Swal.fire('รหัสผ่านสั้นเกินไป', 'ต้องมีความยาวอย่างน้อย 6 ตัวอักษร', 'warning'); return; }
+            if (p1 !== p2) { Swal.fire('รหัสผ่านไม่ตรงกัน', 'กรุณากรอกช่องยืนยันให้ตรงกับรหัสผ่าน', 'warning'); return; }
 
             Swal.fire({title: 'กำลังบันทึก...', didOpen: ()=>Swal.showLoading()});
-
-            // ส่งไปบันทึก
-            const res = await fetchAPI({ 
-                action: 'setPassword', 
-                u: tempUserForSetup, 
-                newPass: p1 
-            });
-            
+            const res = await fetchAPI({ action: 'setPassword', u: tempUserForSetup, newPass: p1 });
             Swal.close();
 
             if (res && res.status) {
                 await Swal.fire('สำเร็จ', 'บันทึกรหัสผ่านเรียบร้อย กรุณาเข้าสู่ระบบใหม่', 'success');
                 switchView('view-login');
-                document.getElementById('password').value = ''; // เคลียร์ช่องให้กรอกใหม่
+                document.getElementById('password').value = '';
             } else {
                 Swal.fire('Error', 'บันทึกไม่สำเร็จ: ' + (res ? res.message : ''), 'error');
             }
@@ -472,14 +405,24 @@
             if (res && res.status) {
                 grid.innerHTML = '';
                 res.systems.forEach(sys => {
-                    // สร้าง Icon
                     let iconHtml = sys.icon.includes('http') 
                         ? `<img src="${sys.icon}" style="height:40px; margin-bottom:10px;">` 
                         : `<i class="${sys.icon}"></i>`;
-                        
+                    
+                    // Badge Logic สำหรับ Job Cost
+                    let badgeHtml = '';
+                    if (sys.id === 'JOBCOST' && sys.lastPeriod) {
+                        // เก็บค่าไว้ใช้ตอนเปิดแอพ
+                        lastJobPeriodGlobal = sys.lastPeriod;
+                        // แปลง 2025-11 เป็น 11/2025
+                        let parts = sys.lastPeriod.split('-');
+                        let badgeTxt = `${parts[1]}/${parts[0]}`;
+                        badgeHtml = `<div class="period-badge">Last: ${badgeTxt}</div>`;
+                    }
+
                     let el = document.createElement('div');
                     el.className = 'app-icon';
-                    el.innerHTML = `${iconHtml}<div>${sys.name}</div>`;
+                    el.innerHTML = `${badgeHtml}${iconHtml}<div>${sys.name}</div>`;
                     el.onclick = () => openSystem(sys.id);
                     grid.appendChild(el);
                 });
@@ -490,52 +433,170 @@
 
         function openSystem(sysId) {
             if (sysId === 'SALE') {
-                // Initialize Sale Dashboard
                 const now = new Date();
                 const year = now.getFullYear();
                 const month = String(now.getMonth() + 1).padStart(2, '0');
                 document.getElementById('monthPicker').value = `${year}-${month}`;
-                
                 switchView('view-app-sale');
-                
-                // Auto load data? (Optional)
                 processSaleData(); 
-            } else {
+            } 
+            else if (sysId === 'JOBCOST') {
+                // ถ้ามี Last Period ให้ตั้งเป็น Default, ถ้าไม่มีใช้เดือนปัจจุบัน
+                let defaultMonth = lastJobPeriodGlobal;
+                if (!defaultMonth) {
+                    const now = new Date();
+                    defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                }
+                
+                document.getElementById('jobMonthPicker').value = defaultMonth;
+                switchView('view-app-jobcost');
+                processJobCostData(); // โหลดข้อมูลทันที
+            }
+            else {
                 Swal.fire('Info', 'ระบบ ' + sysId + ' กำลังอยู่ในระหว่างพัฒนา', 'info');
             }
         }
 
+        function onDateChanged(appType) {
+            if(appType === 'sale') {
+                document.getElementById('dashboardContent').style.display = 'none';
+            } else if(appType === 'job') {
+                document.getElementById('jobContent').style.display = 'none';
+                document.getElementById('emptyJob').style.display = 'none';
+            }
+        }
+
         // ******************************************************
-        // SALES DASHBOARD LOGIC (Adapted from your Code)
+        // JOB COST LOGIC (NEW)
+        // ******************************************************
+        
+        async function processJobCostData() {
+            var monthVal = document.getElementById('jobMonthPicker').value;
+            if (!monthVal) { Swal.fire('เตือน', "กรุณาเลือกเดือน/ปี", 'warning'); return; }
+            
+            document.getElementById('jobContent').style.display = 'none';
+            document.getElementById('emptyJob').style.display = 'none';
+            document.getElementById('loadingJob').style.display = 'block';
+
+            const res = await fetchAPI({ action: 'getJobCostData', month: monthVal });
+            
+            document.getElementById('loadingJob').style.display = 'none';
+
+            if (res && res.status) {
+                if(res.details.length === 0) {
+                    document.getElementById('emptyJob').style.display = 'block';
+                    return;
+                }
+
+                document.getElementById('jobContent').style.display = 'block';
+
+                // 1. Group by PN
+                let groupedData = aggregateJobData(res.details);
+                
+                // 2. Summary
+                let sumRev = 0, sumCost = 0, sumProfit = 0;
+                groupedData.forEach(d => {
+                    sumRev += d.revenue;
+                    sumCost += d.totalCost;
+                    sumProfit += d.profit;
+                });
+                
+                let sumPct = (sumRev > 0) ? (sumProfit / sumRev * 100) : 0;
+
+                document.getElementById('jobSumRev').innerText = formatMillion(sumRev);
+                document.getElementById('jobSumCost').innerText = formatMillion(sumCost);
+                document.getElementById('jobSumProfit').innerText = formatMillion(sumProfit);
+                document.getElementById('jobSumPct').innerText = sumPct.toFixed(2) + '%';
+                
+                // Colorize Profit
+                document.getElementById('jobSumProfit').style.color = sumProfit >= 0 ? '#2e7d32' : '#c62828';
+
+                // 3. Render List
+                renderJobList(groupedData);
+
+            } else {
+                Swal.fire('Error', res ? res.error : 'Unknown Error', 'error');
+            }
+        }
+
+        function aggregateJobData(details) {
+            let map = {};
+            details.forEach(item => {
+                let pn = item.pn || "No PN";
+                if (!map[pn]) {
+                    map[pn] = {
+                        pn: pn,
+                        partName: item.partName,
+                        qty: 0,
+                        revenue: 0,
+                        totalCost: 0,
+                        profit: 0
+                    };
+                }
+                map[pn].qty += item.qty;
+                map[pn].revenue += item.revenue;
+                map[pn].totalCost += item.totalCost;
+                map[pn].profit += item.profit;
+            });
+            // Convert to Array & Sort by Profit Descending
+            return Object.values(map).sort((a,b) => b.profit - a.profit);
+        }
+
+        function renderJobList(data) {
+            let html = '';
+            data.forEach(item => {
+                let pct = (item.revenue > 0) ? (item.profit / item.revenue * 100) : 0;
+                let pctClass = pct >= 0 ? 'pct-plus' : 'pct-minus';
+                let profitColor = item.profit >= 0 ? '#2e7d32' : '#c62828';
+
+                html += `
+                <div class="job-card">
+                    <div class="job-name">${item.partName}</div>
+                    <div class="job-row">
+                        <span class="job-pn">${item.pn}</span>
+                        <span style="font-weight:bold;">${formatNum(item.qty)} ชิ้น</span>
+                    </div>
+                    <div class="job-row">
+                        <span class="text-gray">ยอดขาย:</span>
+                        <span>${formatNum(item.revenue)}</span>
+                    </div>
+                    <div class="job-row">
+                        <span class="text-gray">ต้นทุน:</span>
+                        <span>${formatNum(item.totalCost)}</span>
+                    </div>
+                    <div class="job-row" style="margin-top:5px; padding-top:5px; border-top:1px dashed #eee;">
+                        <span style="font-weight:bold;">กำไร:</span>
+                        <span style="font-weight:bold; color:${profitColor};">${formatNum(item.profit)} 
+                            <span class="pct-badge ${pctClass}">${pct.toFixed(2)}%</span>
+                        </span>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('jobList').innerHTML = html;
+        }
+
+
+        // ******************************************************
+        // SALES DASHBOARD LOGIC (Existing)
         // ******************************************************
         
         let overviewChart, customerChart, detailChart, categoryChart;
         let globalAggregatedData = [];
 
-        function onDateChanged() {
-            document.getElementById('dashboardContent').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'block';
-        }
-
-        // *** เปลี่ยนจาก google.script.run เป็น fetchAPI ***
         async function processSaleData() {
             var monthVal = document.getElementById('monthPicker').value;
-            if (!monthVal) { alert("กรุณาเลือกเดือน/ปี"); return; }
+            if (!monthVal) { Swal.fire('เตือน', "กรุณาเลือกเดือน/ปี", 'warning'); return; }
             
             document.getElementById('dashboardContent').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'none';
-            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loadingSale').style.display = 'block';
 
-            // เรียก API
             const res = await fetchAPI({ action: 'getSaleData', month: monthVal });
             
-            document.getElementById('loading').style.display = 'none';
+            document.getElementById('loadingSale').style.display = 'none';
 
             if (res && res.status) {
-                // Success
                 document.getElementById('dashboardContent').style.display = 'block';
 
-                // 1. ตั้งหัวข้อ
                 if (monthVal) {
                     var parts = monthVal.split('-');
                     var yearThai = parseInt(parts[0]) + 543;
@@ -543,10 +604,8 @@
                 }
                 document.getElementById('lastUpdatedTxt').innerText = res.lastUpdated;
 
-                // 2. รวมยอด (Aggregation)
                 globalAggregatedData = aggregateData(res.details);
 
-                // 3. คำนวณยอดรวม Summary
                 let totalSales = 0, totalBacklog = 0, totalSent = 0, totalPastDue = 0;
                 globalAggregatedData.forEach(c => {
                     totalSales += c.totalSales;
@@ -560,75 +619,46 @@
                 document.getElementById('sumSent').innerText = formatNum(totalSent);
                 document.getElementById('sumDue').innerText = formatNum(totalPastDue);
 
-                // 4. วาดกราฟ
                 drawOverviewChart(totalSales, totalBacklog, totalSent, totalPastDue);
                 
-                // Sort Top 5
                 globalAggregatedData.sort((a, b) => b.totalSales - a.totalSales);
                 
                 drawCustomerChart(globalAggregatedData);
                 renderList(globalAggregatedData);
 
             } else {
-                // Error
                 Swal.fire('Error', res ? res.error : 'Unknown Error', 'error');
             }
         }
 
-        // *** Helper Functions เดิมของคุณ (ใช้งานต่อได้เลย) ***
         function aggregateData(rawDetails) {
-          let map = {};
-          
-          if (!rawDetails || rawDetails.length === 0) return [];
+            let map = {};
+            if (!rawDetails || rawDetails.length === 0) return [];
+            rawDetails.forEach(item => {
+                let name = item.customer || "ไม่ระบุชื่อ";
+                let dueDate = item.dueDate; 
+                let sales = Number(item.sales || 0);
+                let backlog = Number(item.backlog || 0);
+                let sent = Number(item.sent || 0);
+                let pastDue = Number(item.pastDue || 0);
+                
+                // กรองค่าที่เป็น 0 ทั้งหมดออก
+                if (sales === 0 && backlog === 0 && sent === 0 && pastDue === 0) return;
 
-          rawDetails.forEach(item => {
-              // รับค่า
-              let name = item.customer || "ไม่ระบุชื่อ";
-              let dueDate = item.dueDate; 
-              
-              let sales = Number(item.sales || 0);
-              let backlog = Number(item.backlog || 0);
-              let sent = Number(item.sent || 0);
-              let pastDue = Number(item.pastDue || 0);
-
-              // *** แก้ไขจุดที่ 2: กรองค่าที่เป็น 0 ทั้งหมดออก ***
-              // ถ้าไม่มี Sales, Backlog, Sent และ PastDue เลย ให้ข้ามรายการนี้ไป
-              if (sales === 0 && backlog === 0 && sent === 0 && pastDue === 0) {
-                  return;
-              }
-
-              if (!map[name]) {
-                  map[name] = {
-                      name: name,
-                      totalSales: 0, totalBacklog: 0, totalSent: 0, totalPastDue: 0,
-                      history: [] 
-                  };
-              }
-              
-              map[name].totalSales += sales;
-              map[name].totalBacklog += backlog;
-              map[name].totalSent += sent;
-              map[name].totalPastDue += pastDue;
-              
-              map[name].history.push({
-                  date: formatDateStr(dueDate),
-                  sales: sales, backlog: backlog, sent: sent, pastDue: pastDue
-              });
-          });
-          
-          return Object.values(map);
-      }
+                if (!map[name]) {
+                    map[name] = { name: name, totalSales: 0, totalBacklog: 0, totalSent: 0, totalPastDue: 0, history: [] };
+                }
+                map[name].totalSales += sales;
+                map[name].totalBacklog += backlog;
+                map[name].totalSent += sent;
+                map[name].totalPastDue += pastDue;
+                map[name].history.push({ date: formatDateStr(dueDate), sales: sales, backlog: backlog, sent: sent, pastDue: pastDue });
+            });
+            return Object.values(map);
+        }
 
         function drawOverviewChart(sales, backlog, sent, due) {
             let netBacklog = Math.max(0, backlog - due);
-            
-            try {
-                if(document.getElementById('sumSales')) document.getElementById('sumSales').innerText = formatNum(sales);
-                if(document.getElementById('sumSent')) document.getElementById('sumSent').innerText = formatNum(sent);
-                if(document.getElementById('sumBacklog')) document.getElementById('sumBacklog').innerText = formatNum(netBacklog);
-                if(document.getElementById('sumDue')) document.getElementById('sumDue').innerText = formatNum(due);
-            } catch(e) {}
-
             const ctx = document.getElementById('overviewChart').getContext('2d');
             if (overviewChart) overviewChart.destroy();
             
@@ -649,13 +679,12 @@
                 }
             });
 
-            // Legend
             const legendItems = [
                 { label: 'ยอดรวม', value: sales, color: '#42a5f5', index: 3 },
                 { label: 'ส่งแล้ว', value: sent, color: '#66bb6a', index: 0 },
                 { label: 'รอส่ง', value: netBacklog, color: '#ffa726', index: 1 }, 
                 { label: 'Past Due', value: due, color: '#ef5350', index: 2 },
-                { label: 'รอส่ง+Past', value: backlog, color: '#8d6e63', index: 4 } 
+                { label: 'รอส่ง+PastDue', value: backlog, color: '#8d6e63', index: 4 } 
             ];
             let html = '<ul style="list-style: none; padding: 0; margin: 0; font-size: 13px;">';
             legendItems.forEach(item => {
@@ -705,9 +734,8 @@
 
         function renderList(data) {
             var html = '';
-            if (data.length === 0) {
-                html = '<div style="text-align:center; margin-top:20px;">ไม่พบข้อมูล</div>';
-            } else {
+            if (data.length === 0) { html = '<div style="text-align:center; margin-top:20px;">ไม่พบข้อมูล</div>'; } 
+            else {
                 data.forEach(function(item, index) {
                     var borderClass = (item.totalPastDue > 0) ? 'has-due' : 'no-due';
                     var dueStyle = (item.totalPastDue > 0) ? 'class="text-red"' : '';
@@ -725,239 +753,112 @@
 
         function openModalByIndex(index) { openModal(globalAggregatedData[index]); }
         function openModal(customerData) {
-          document.getElementById('detailModal').style.display = 'flex';
-          document.getElementById('modalCustName').innerText = customerData.name;
+            document.getElementById('detailModal').style.display = 'flex';
+            document.getElementById('modalCustName').innerText = customerData.name;
+            customerData.history.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-          // 1. เรียงลำดับวันที่
-          customerData.history.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const ctx = document.getElementById('detailChart').getContext('2d');
+            if (detailChart) detailChart.destroy();
 
-          // 2. เตรียมกราฟ
-          const ctx = document.getElementById('detailChart').getContext('2d');
-          if (detailChart) detailChart.destroy();
+            const labels = customerData.history.map(h => {
+                if (h.date && h.date.includes('-')) {
+                    let parts = h.date.split('-');
+                    let d = new Date(parts[0], parts[1] - 1, parts[2]); 
+                    return d.getDate() + "/" + (d.getMonth() + 1);
+                }
+                let d = new Date(h.date);
+                return isNaN(d) ? h.date : d.getDate() + "/" + (d.getMonth()+1);
+            });
+            let custNetBacklog = Math.max(0, customerData.totalBacklog - customerData.totalPastDue);
 
-          const labels = customerData.history.map(h => {
-             // *** แก้ไขจุดที่ 1: ป้องกันวันที่เลื่อน โดยการหั่น String ตรงๆ ***
-             // รับค่ามาเป็น "yyyy-mm-dd" เช่น "2025-12-08"
-             if (h.date && h.date.includes('-')) {
-                 let parts = h.date.split('-'); // ได้ [2025, 12, 08]
-                 // สร้าง Date object: ปี, เดือน(เริ่มที่ 0), วัน
-                 let d = new Date(parts[0], parts[1] - 1, parts[2]); 
-                 return d.getDate() + "/" + (d.getMonth() + 1);
-             }
-             // ถ้า format ไม่ใช่แบบขีด ก็ใช้วิธีเดิมสำรองไว้
-             let d = new Date(h.date);
-             return isNaN(d) ? h.date : d.getDate() + "/" + (d.getMonth()+1);
-          });
-          
-          let custNetBacklog = customerData.totalBacklog - customerData.totalPastDue;
-          if (custNetBacklog < 0) custNetBacklog = 0;
-
-          detailChart = new Chart(ctx, {
-             type: 'bar',
-             data: {
-                 labels: labels,
-                 datasets: [
-                     { 
-                         label: 'ส่ง: ' + formatNum(customerData.totalSent), 
-                         data: customerData.history.map(h => h.sent), 
-                         backgroundColor: '#66bb6a' 
-                     },
-                     { 
-                         label: 'ค้าง: ' + formatNum(custNetBacklog), 
-                         data: customerData.history.map(h => Math.max(0, h.backlog - h.pastDue)), 
-                         backgroundColor: '#ffa726' 
-                     },
-                     { 
-                         label: 'Due: ' + formatNum(customerData.totalPastDue), 
-                         data: customerData.history.map(h => h.pastDue), 
-                         backgroundColor: '#ef5350' 
-                     }
-                 ]
-             },
-             options: {
-                 responsive: true, 
-                 maintainAspectRatio: false,
-                 interaction: { mode: 'index', intersect: false },
-                 scales: { 
-                     x: { stacked: true }, 
-                     y: { stacked: true, beginAtZero: true } 
-                 },
-                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { font: { size: 12, weight: 'bold' }, boxWidth: 12, padding: 15 }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let labelName = context.dataset.label.split(':')[0];
-                                return labelName + ': ' + formatNum(context.raw);
-                            }
-                        }
+            detailChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'ส่ง: ' + formatNum(customerData.totalSent), data: customerData.history.map(h => h.sent), backgroundColor: '#66bb6a' },
+                        { label: 'ค้าง: ' + formatNum(custNetBacklog), data: customerData.history.map(h => Math.max(0, h.backlog - h.pastDue)), backgroundColor: '#ffa726' },
+                        { label: 'Due: ' + formatNum(customerData.totalPastDue), data: customerData.history.map(h => h.pastDue), backgroundColor: '#ef5350' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 12, weight: 'bold' }, boxWidth: 12, padding: 15 } },
+                        tooltip: { callbacks: { label: function(context) { let labelName = context.dataset.label.split(':')[0]; return labelName + ': ' + formatNum(context.raw); } } }
                     }
-                 }
-             }
-          });
+                }
+            });
 
-          // 3. สร้างตาราง (Copy โค้ดสร้างตารางเดิมมาใส่ตรงนี้ได้เลยครับ หรือใช้ของเดิมที่อยู่ด้านล่างต่อจากนี้)
-          let tableHtml = `<table style="width:100%; border-collapse: collapse; text-align:right; font-size:13px;">
+            let tableHtml = `<table style="width:100%; border-collapse: collapse; text-align:right; font-size:13px;">
              <tr style="background:#f5f5f5; text-align:center; font-weight:bold; color:#555;">
-                <th style="padding:8px;">วันที่</th>
-                <th style="padding:8px;">ส่ง</th>
-                <th style="padding:8px;">ค้าง</th>
-                <th style="padding:8px;">Due</th>
+                <th style="padding:8px;">วันที่</th><th style="padding:8px;">ส่ง</th><th style="padding:8px;">ค้าง</th><th style="padding:8px;">Due</th>
              </tr>`;
-          
-          customerData.history.forEach(h => {
-             let rowNetBacklog = h.backlog - h.pastDue;
-             if (rowNetBacklog < 0) rowNetBacklog = 0;
-
-             tableHtml += `
-             <tr style="border-bottom:1px solid #eee;">
-                <td style="text-align:center; padding:6px; color:#555;">${h.date}</td>
-                <td style="padding:6px; color:#66bb6a;">${formatNum(h.sent)}</td>
-                <td style="padding:6px; color:#ffa726;">${formatNum(rowNetBacklog)}</td>
-                <td style="padding:6px; color:#ef5350;">${formatNum(h.pastDue)}</td>
-             </tr>`;
-          });
-          tableHtml += `</table>`;
-          document.getElementById('modalTable').innerHTML = tableHtml;
-      }
+            customerData.history.forEach(h => {
+                let rowNetBacklog = Math.max(0, h.backlog - h.pastDue);
+                tableHtml += `<tr style="border-bottom:1px solid #eee;">
+                    <td style="text-align:center; padding:6px; color:#555;">${h.date}</td>
+                    <td style="padding:6px; color:#66bb6a;">${formatNum(h.sent)}</td>
+                    <td style="padding:6px; color:#ffa726;">${formatNum(rowNetBacklog)}</td>
+                    <td style="padding:6px; color:#ef5350;">${formatNum(h.pastDue)}</td>
+                </tr>`;
+            });
+            tableHtml += `</table>`;
+            document.getElementById('modalTable').innerHTML = tableHtml;
+        }
 
         function openCategoryModal(typeIndex) {
-          // 1. แปลงเป็นตัวเลขให้ชัวร์
-          typeIndex = Number(typeIndex); 
-          
-          if (!globalAggregatedData || globalAggregatedData.length === 0) {
-              Swal.fire('ข้อผิดพลาด', 'ไม่พบข้อมูลตั้งต้น', 'error');
-              return;
-          }
-          let title = '';
-          let color = '';
-          
-          // 2. เตรียมข้อมูล (Calculate Data)
-          let processedData = globalAggregatedData.map(d => {
-              let val = 0;
-              if (typeIndex === 0) {
-                  val = d.totalSent;
-                  title = 'รายการส่งแล้ว (Sent)'; color = '#66bb6a';
-              } else if (typeIndex === 1) {
-                  val = Math.max(0, d.totalBacklog - d.totalPastDue);
-                  title = 'รายการรอส่ง (ไม่รวม Past Due)'; color = '#ffa726';
-              } else if (typeIndex === 2) {
-                  val = d.totalPastDue;
-                  title = 'รายการเกินกำหนด (Past Due)'; color = '#ef5350';
-              } else if (typeIndex === 3) {
-                  val = d.totalSales;
-                  title = 'ยอดขายรวมทั้งหมด'; color = '#42a5f5';
-              } else if (typeIndex === 4) {
-                  val = d.totalBacklog; 
-                  title = 'รายการรอส่งทั้งหมด (รวม Past Due)'; color = '#8d6e63';
-              }
-              return { ...d, value: val };
-          });
+            typeIndex = Number(typeIndex);
+            if (!globalAggregatedData || globalAggregatedData.length === 0) return;
+            let processedData = globalAggregatedData.map(d => {
+                let val = 0;
+                let title = '', color = '';
+                if (typeIndex === 0) { val = d.totalSent; title = 'รายการส่งแล้ว'; color = '#66bb6a'; }
+                else if (typeIndex === 1) { val = Math.max(0, d.totalBacklog - d.totalPastDue); title = 'รายการรอส่ง'; color = '#ffa726'; }
+                else if (typeIndex === 2) { val = d.totalPastDue; title = 'รายการเกินกำหนด'; color = '#ef5350'; }
+                else if (typeIndex === 3) { val = d.totalSales; title = 'ยอดขายรวมทั้งหมด'; color = '#42a5f5'; }
+                else if (typeIndex === 4) { val = d.totalBacklog; title = 'รายการรอส่งทั้งหมด'; color = '#8d6e63'; }
+                return { ...d, value: val, title, color };
+            });
 
-          // 3. กรองเฉพาะยอด > 0 และเรียงลำดับ
-          let filteredData = processedData.filter(d => d.value > 0);
-          filteredData.sort((a, b) => b.value - a.value);
+            let filteredData = processedData.filter(d => d.value > 0).sort((a,b)=>b.value-a.value).slice(0, 15);
+            if (filteredData.length === 0) { Swal.fire('ไม่มีข้อมูล', 'ไม่มีรายการในหมวดหมู่นี้', 'info'); return; }
 
-          // ตัดเหลือ 15 รายการ
-          if (filteredData.length > 15) {
-              filteredData = filteredData.slice(0, 15);
-          }
+            let totalValue = filteredData.reduce((sum, item) => sum + item.value, 0);
+            document.getElementById('catModalSubtitle').innerText = `รวมมูลค่า ${formatMillion(totalValue)} ล้านบาท`;
+            document.getElementById('catModalTitle').innerText = filteredData[0].title;
+            document.getElementById('categoryModal').style.display = 'flex';
+            document.getElementById('categoryChartContainer').style.height = ((filteredData.length * 35) + 50) + 'px';
 
-          if (filteredData.length === 0) {
-              Swal.fire('ไม่มีข้อมูล', 'ไม่มีรายการในหมวดหมู่นี้', 'info');
-              return;
-          }
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            if (categoryChart) categoryChart.destroy();
 
-          // แสดงยอดรวมที่หัวข้อ
-          let totalValue = filteredData.reduce((sum, item) => sum + item.value, 0);
-          document.getElementById('catModalSubtitle').innerText = `รวมมูลค่า ${formatMillion(totalValue)} ล้านบาท`;
+            categoryChart = new Chart(ctx, {
+                type: 'bar',
+                plugins: [ChartDataLabels],
+                data: {
+                    labels: filteredData.map(d => d.name.length > 15 ? d.name.substring(0,15)+'..' : d.name),
+                    datasets: [{ data: filteredData.map(d=>d.value), backgroundColor: filteredData[0].color, barPercentage: 0.6 }]
+                },
+                options: {
+                    indexAxis: 'y', animation: false, maintainAspectRatio: false,
+                    layout: { padding: { right: 25, left: 0 } },
+                    events: ['click', 'touchstart'], interaction: { mode: 'nearest', axis: 'y', intersect: false },
+                    onClick: (e) => {
+                        const chart = e.chart;
+                        const pointsY = chart.scales.y.getValueForPixel(Chart.helpers.getRelativePosition(e, chart).y);
+                        const index = Math.round(pointsY);
+                        if (index >= 0 && index < filteredData.length) setTimeout(()=>openModal(filteredData[index]), 50);
+                    },
+                    scales: { x: { display: false }, y: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#333', autoSkip: false } } },
+                    plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'end', color: '#555', font: { weight: 'bold', size: 11 }, formatter: formatMillion }, tooltip: { enabled: false } }
+                }
+            });
+        }
 
-          // คำนวณความสูง
-          let dynamicHeight = (filteredData.length * 35) + 50; 
-          document.getElementById('categoryChartContainer').style.height = dynamicHeight + 'px';
-
-          // Labels (ตัดคำ)
-          let labels = filteredData.map(d => {
-              let n = d.name;
-              n = n.replace(/บริษัท|ห\.?จ\.?ก\.?|ห้างหุ้นส่วนจำกัด|จำกัด|[(]?มหาชน[)]?|company|ltd\.?|co\.?|inc\.?/gi, '');
-              n = n.replace(/[(].*?[)]/g, '');
-              n = n.split('สาขา')[0];
-              n = n.trim();
-              return n.length > 15 ? n.substring(0, 15) + '..' : n;
-          });
-          
-          let values = filteredData.map(d => d.value);
-
-          // เปิด Modal
-          document.getElementById('categoryModal').style.display = 'flex';
-          document.getElementById('catModalTitle').innerText = title;
-
-          const ctx = document.getElementById('categoryChart').getContext('2d');
-          if (categoryChart) categoryChart.destroy();
-
-          categoryChart = new Chart(ctx, {
-              type: 'bar',
-              plugins: [ChartDataLabels],
-              data: {
-                  labels: labels,
-                  datasets: [{
-                      data: values,
-                      backgroundColor: color,
-                      barPercentage: 0.6,
-                      categoryPercentage: 0.9 
-                  }]
-              },
-              options: {
-                  indexAxis: 'y',
-                  animation: false, 
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  
-                  // *** แก้ไขตรงนี้: ลดจาก 70 เหลือ 25 เพื่อให้กราฟยาวขึ้นครับ ***
-                  layout: { padding: { right: 25, left: 0 } },
-                  
-                  events: ['click', 'touchstart'], 
-                  interaction: {
-                      mode: 'nearest', axis: 'y', intersect: false 
-                  },
-                  onClick: (e) => {
-                      const chart = e.chart;
-                      const canvasPosition = Chart.helpers.getRelativePosition(e, chart);
-                      const dataY = chart.scales.y.getValueForPixel(canvasPosition.y);
-                      const index = Math.round(dataY);
-
-                      if (index >= 0 && index < filteredData.length) {
-                          let selectedCustomer = filteredData[index];
-                          setTimeout(() => { openModal(selectedCustomer); }, 50);
-                      }
-                  },
-                  scales: {
-                      x: { display: false },
-                      y: { 
-                          grid: { display: false },
-                          ticks: { font: { size: 11 }, color: '#333', autoSkip: false } 
-                      }
-                  },
-                  plugins: {
-                      legend: { display: false },
-                      datalabels: {
-                          anchor: 'end', 
-                          align: 'end', 
-                          color: '#555',
-                          font: { weight: 'bold', size: 11 },
-                          formatter: function(value) { 
-                              return formatMillion(value); 
-                          }
-                      },
-                      tooltip: { enabled: false } 
-                  }
-              }
-          });
-      }
-
+        // Utils & Event Handling
         function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
         function closeCategoryModal() { document.getElementById('categoryModal').style.display = 'none'; }
         
@@ -969,54 +870,18 @@
         function formatNum(num) { return new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(num); }
         function formatDateStr(dateVal) { return (dateVal && dateVal.includes('T')) ? dateVal.split('T')[0] : (dateVal || "-"); }
         function formatMillion(num) { return (num >= 1000000) ? (num / 1000000).toFixed(2) : formatNum(num); }
-        /*
-        // History Back handling
+
         document.addEventListener('DOMContentLoaded', () => history.pushState(null, null, location.href));
         window.onpopstate = function () {
             if (document.getElementById('detailModal').style.display === 'flex') { closeModal(); history.pushState(null, null, location.href); }
             else if (document.getElementById('categoryModal').style.display === 'flex') { closeCategoryModal(); history.pushState(null, null, location.href); }
-            else if (document.getElementById('view-app-sale').classList.contains('active-view')) { switchView('view-portal'); history.pushState(null, null, location.href); }
+            else if (document.getElementById('view-app-sale').classList.contains('active-view') || document.getElementById('view-app-jobcost').classList.contains('active-view')) { 
+                switchView('view-portal'); history.pushState(null, null, location.href); 
+            }
+            else if (document.getElementById('view-set-password').classList.contains('active-view')) {
+                switchView('view-login'); history.pushState(null, null, location.href);
+            }
             else { history.back(); }
-        };
-        */
-        // ==============================================
-        // ระบบจัดการปุ่ม Back (สำหรับ Portal System)
-        // ==============================================
-        
-        // สร้าง History หลอกๆ ไว้ 1 ชั้น เมื่อโหลดหน้าเว็บ
-        document.addEventListener('DOMContentLoaded', () => {
-            history.pushState(null, null, location.href);
-        });
-
-        window.onpopstate = function () {
-            // เช็คว่ามี Modal ไหนเปิดอยู่ไหม?
-            var detailModal = document.getElementById('detailModal');
-            var categoryModal = document.getElementById('categoryModal');
-            
-            // 1. ถ้ากราฟแนวตั้ง (รายคน) เปิดอยู่ -> ปิดมัน
-            if (detailModal && detailModal.style.display === 'flex') {
-                closeModal(); 
-                history.pushState(null, null, location.href); // ดัน History กลับเข้าไป เพื่อให้กด Back ได้อีก
-            } 
-            // 2. ถ้ากราฟแนวนอน (รายกลุ่ม) เปิดอยู่ -> ปิดมัน
-            else if (categoryModal && categoryModal.style.display === 'flex') {
-                closeCategoryModal(); 
-                history.pushState(null, null, location.href);
-            } 
-            // 3. ถ้าอยู่ในหน้าระบบ Sale (view-app-sale) -> ให้กลับไปหน้า Portal
-            else if (document.getElementById('view-app-sale').classList.contains('active-view')) {
-                switchView('view-portal'); 
-                history.pushState(null, null, location.href);
-            }
-            // 4. ถ้าอยู่ในหน้าตั้งรหัสผ่าน -> กลับไปหน้า Login
-            else if (document.getElementById('view-set-password') && document.getElementById('view-set-password').classList.contains('active-view')) {
-                switchView('view-login');
-                history.pushState(null, null, location.href);
-            }
-            // 5. อื่นๆ (เช่นอยู่หน้า Portal แล้วกด Back) -> ให้ออกตามปกติ
-            else {
-                history.back(); 
-            }
         };
     </script>
 </body>
