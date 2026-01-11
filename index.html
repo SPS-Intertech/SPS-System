@@ -290,7 +290,10 @@
         <div class="modal-content">
             <button class="close-btn" onclick="closeModal()">&times;</button>
             <div class="modal-title" id="modalCustName">-</div>
-            <div style="font-size:12px; color:#666; margin-bottom:15px;">รายละเอียดแยกตามกำหนดส่ง (Due Date)</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#666; margin-bottom:15px;">
+                <span>รายละเอียดแยกตามกำหนดส่ง</span>
+                <span id="modalCustTotal" style="font-weight:bold; color:#2c3e50; font-size:14px;"></span>
+            </div>
             <div class="chart-box" style="height: 250px;"><canvas id="detailChart"></canvas></div>
             <div id="modalTable" style="margin-top:15px; font-size:12px;"></div>
         </div>
@@ -798,6 +801,9 @@
         function openModal(customerData) {
             document.getElementById('detailModal').style.display = 'flex';
             document.getElementById('modalCustName').innerText = customerData.name;
+            // *** เพิ่มบรรทัดนี้ครับ ***
+            document.getElementById('modalCustTotal').innerText = 'ยอดรวม: ' + formatNum(customerData.totalSales);
+            
             customerData.history.sort((a, b) => new Date(a.date) - new Date(b.date));
 
             const ctx = document.getElementById('detailChart').getContext('2d');
